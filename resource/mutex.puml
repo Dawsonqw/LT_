@@ -1,0 +1,16 @@
+@startuml
+'https://plantuml.com/class-diagram
+class Semaphore{
+    - m_semaphore sem_t
+    --
+    + Semaphore()
+    + ~Semaphore()
+    + wait() void
+    + notify() void
+}
+
+class ScopedLockImpl{
+
+}
+
+@enduml

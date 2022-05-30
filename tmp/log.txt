@@ -1,0 +1,8 @@
+2022-05-25 21:45:41 [1001ms]	10488	brand_new_threa	0	[FATAL]	[root]	/Code/c++/my_code_project/sylar/LT/tests/test_log.cpp:34	fatal msg
+2022-05-25 21:45:41 [1002ms]	10488	brand_new_threa	0	[ERROR]	[root]	/Code/c++/my_code_project/sylar/LT/tests/test_log.cpp:35	err msg
+2022-05-25 21:48:12 [1001ms]	10953	brand_new_threa	0	[FATAL]	[root]	/Code/c++/my_code_project/sylar/LT/tests/test_log.cpp:34	fatal msg
+2022-05-25 21:48:12 [1001ms]	10953	brand_new_threa	0	[ERROR]	[root]	/Code/c++/my_code_project/sylar/LT/tests/test_log.cpp:35	err msg
+2022-05-25 21:48:24 [1001ms]	11035	brand_new_threa	0	[FATAL]	[root]	/Code/c++/my_code_project/sylar/LT/tests/test_log.cpp:34	fatal msg
+2022-05-25 21:48:24 [1002ms]	11035	brand_new_threa	0	[ERROR]	[root]	/Code/c++/my_code_project/sylar/LT/tests/test_log.cpp:35	err msg
+2022-05-25 21:48:47 [1001ms]	11106	brand_new_threa	0	[FATAL]	[root]	/Code/c++/my_code_project/sylar/LT/tests/test_log.cpp:34	fatal msg
+2022-05-25 21:48:47 [1001ms]	11106	brand_new_threa	0	[ERROR]	[root]	/Code/c++/my_code_project/sylar/LT/tests/test_log.cpp:35	err msg

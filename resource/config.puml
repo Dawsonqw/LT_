@@ -1,0 +1,51 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+abstract  class ConfigVarBase{
+    - m_name string
+    - m_description string
+    --
+    + ConfigVarBase()
+    + ~ConfigVarBase()
+    + getName() const string
+    + getDescriptoin const string
+    + toString() const string
+    + fromString bool
+    + getTypeName() string
+}
+
+class ConfigVar{
+    + RWMutexType RWMutexType
+    + ptr shared_ptr<ConfigVar>
+    + on_change_cb function<void()>
+    --
+    - m_mutex RWMutexType
+    - m_cbs map<uint64_t,on_change_cb>
+    --
+    + ConfigVar()
+    + toString() string
+    + fromString() bool
+    + getValue() T
+    + setvalue() void
+    + getTypeName() string
+    + addListener() uint64_t
+    + delListener() void
+    + getListener() on_change_cb
+    + clearListener() void
+}
+
+class config{
+    + ConfigVarMap unordered_map<string,ConfigVarBase::ptr>
+    + RWMutexType RWMutex
+    --
+    - GetDatas() static ConfigVarMap
+    - GetMutex() static RWMutexType
+    --
+    + Lookup() static ConfigVar<T>::ptr
+    + LoadFromYaml() static void
+    + LoadFromConfDir() static void
+    + LookupBase() static ConfigVarBase::ptr
+    + Visit() static void
+}
+
+@enduml
