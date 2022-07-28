@@ -23,10 +23,7 @@ endif()
 
 include_directories(./include)
 set(SOURCE_LIST
-        src/log.cc
-        src/config.cc
         src/util.cc
-        src/env.cc
         src/mutex.cc
         src/thread.cc
         src/fiber.cc
@@ -42,15 +39,6 @@ set(SOURCE_LIST
         src/tcp_server.cc
         src/stream.cc
         src/socket_stream.cc
-        src/Http.cc
-        src/http_parser.cc
-        src/Http_session.cc
-        src/servlet.cc
-        src/uri.cc
-        src/Http_connection.cc
-        src/Http_server.cc
-        src/daemon.cc
-        include/http/http-parser/http_parser.c
         )
 
 add_library(LT STATIC ${SOURCE_LIST})
@@ -66,26 +54,9 @@ set(LIBRS
 include_directories(./inlcude)
 #link_libraries(../lib)  这是一个添加库路径的命令 注意是全路径
 
-add_executable(test_logs tests/test_logs.cpp)
-add_dependencies(test_logs LT)
-target_link_libraries(test_logs ${LIBRS})
-
-
-add_executable(test_log tests/test_log.cpp)
-add_dependencies(test_log LT)
-target_link_libraries(test_log ${LIBRS})
-
 add_executable(test_thread tests/test_thread.cc)
 add_dependencies(test_thread LT)
 target_link_libraries(test_thread ${LIBRS})
-
-add_executable(test_config tests/test_config.cc)
-add_dependencies(test_config LT)
-target_link_libraries(test_config ${LIBRS})
-
-add_executable(test_env tests/test_env.cc)
-add_dependencies(test_env LT)
-target_link_libraries(test_env ${LIBRS})
 
 
 add_executable(test_fiber tests/test_fiber.cc)
@@ -144,32 +115,3 @@ add_executable(test_tcp_server tests/test_tcp_server.cc)
 add_dependencies(test_tcp_server LT)
 target_link_libraries(test_tcp_server ${LIBRS})
 
-
-add_executable(test_http tests/test_http.cc)
-add_dependencies(test_http LT)
-target_link_libraries(test_http ${LIBRS})
-
-
-add_executable(test_http_parser tests/test_http_parser.cc)
-add_dependencies(test_http_parser LT)
-target_link_libraries(test_http_parser ${LIBRS})
-
-add_executable(test_http_server tests/test_http_server.cc)
-add_dependencies(test_http_server LT)
-target_link_libraries(test_http_server ${LIBRS})
-
-
-add_executable(test_http_connection tests/test_http_connection.cc)
-add_dependencies(test_http_connection LT)
-target_link_libraries(test_http_connection ${LIBRS})
-
-
-add_executable(test_uri tests/test_uri.cc)
-add_dependencies(test_uri LT)
-target_link_libraries(test_uri ${LIBRS})
-
-add_executable(test_daemon tests/test_daemon.cc)
-add_dependencies(test_daemon LT)
-target_link_libraries(test_daemon ${LIBRS})
-
-add_executable(MAIN TEST.cpp)
