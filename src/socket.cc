@@ -1,3 +1,4 @@
+#include <sstream>
 #include "socket.h"
 #include "iomanager.h"
 #include "fd_manager.h"
@@ -8,7 +9,7 @@
 
 namespace LT {
 
-static LT::Logger::ptr g_logger = LT_LOG_NAME("system");
+static auto g_logger = std::make_shared<spdlog::logger>("root", g_sink);
 
 Socket::ptr Socket::CreateTCP(LT::Address::ptr address) {
     Socket::ptr sock(new Socket(address->getFamily(), TCP, 0));
@@ -101,9 +102,7 @@ void Socket::setRecvTimeout(int64_t v) {
 bool Socket::getOption(int level, int option, void *result, socklen_t *len) {
     int rt = getsockopt(m_sock, level, option, result, (socklen_t *)len);
     if (rt) {
-        LT_LOG_DEBUG(g_logger) << "getOption sock=" << m_sock
-                                  << " level=" << level << " option=" << option
-                                  << " errno=" << errno << " errstr=" << strerror(errno);
+		g_logger->debug("getOption sock={},level={},option={},errno={},errstr={}",m_sock,level,option,errno,strerror(errno));
         return false;
     }
     return true;
@@ -111,9 +110,7 @@ bool Socket::getOption(int level, int option, void *result, socklen_t *len) {
 
 bool Socket::setOption(int level, int option, const void *result, socklen_t len) {
     if (setsockopt(m_sock, level, option, result, (socklen_t)len)) {
-        LT_LOG_DEBUG(g_logger) << "setOption sock=" << m_sock
-                                  << " level=" << level << " option=" << option
-                                  << " errno=" << errno << " errstr=" << strerror(errno);
+		g_logger->debug("setOption sock={},level={},option={},errno={},errstr={}", m_sock, level, option, errno, strerror(errno));
         return false;
     }
     return true;
@@ -123,8 +120,7 @@ Socket::ptr Socket::accept() {
     Socket::ptr sock(new Socket(m_family, m_type, m_protocol));
     int newsock = ::accept(m_sock, nullptr, nullptr);
     if (newsock == -1) {
-        LT_LOG_ERROR(g_logger) << "accept(" << m_sock << ") errno="
-                                  << errno << " errstr=" << strerror(errno);
+		g_logger->debug("accept sock={},errno={},errstr={}", m_sock,errno, strerror(errno));
         return nullptr;
     }
     if (sock->init(newsock)) {
@@ -156,9 +152,7 @@ bool Socket::bind(const Address::ptr addr) {
     }
 
     if (LT_UNLIKELY(addr->getFamily() != m_family)) {
-        LT_LOG_ERROR(g_logger) << "bind sock.family("
-                                  << m_family << ") addr.family(" << addr->getFamily()
-                                  << ") not equal, addr=" << addr->toString();
+		g_logger->error("bind sock.family({}) addr.family({}) not equal addr={}", m_family, addr->getFamily(), addr->toString());
         return false;
     }
 
@@ -168,13 +162,12 @@ bool Socket::bind(const Address::ptr addr) {
         if (sock->connect(uaddr)) {
             return false;
         } else {
-            LT::FSUtil::Unlink(uaddr->getPath(), true);
+            Unlink(uaddr->getPath(), true);
         }
     }
 
     if (::bind(m_sock, addr->getAddr(), addr->getAddrLen())) {
-        LT_LOG_ERROR(g_logger) << "bind error errrno=" << errno
-                                  << " errstr=" << strerror(errno);
+		g_logger->error("bind error errrno={} errstr={}", errno, strerror(errno));
         return false;
     }
     getLocalAddress();
@@ -183,7 +176,7 @@ bool Socket::bind(const Address::ptr addr) {
 
 bool Socket::reconnect(uint64_t timeout_ms) {
     if (!m_remoteAddress) {
-        LT_LOG_ERROR(g_logger) << "reconnect m_remoteAddress is null";
+		g_logger->error("reconnect m_remoteAddress is null");
         return false;
     }
     m_localAddress.reset();
@@ -200,24 +193,20 @@ bool Socket::connect(const Address::ptr addr, uint64_t timeout_ms) {
     }
 
     if (LT_UNLIKELY(addr->getFamily() != m_family)) {
-        LT_LOG_ERROR(g_logger) << "connect sock.family("
-                                  << m_family << ") addr.family(" << addr->getFamily()
-                                  << ") not equal, addr=" << addr->toString();
+		g_logger->error("connect sock.family({}) addr.family({}) not equal,addr={}", 
+				m_family, addr->getFamily(),addr->toString());
         return false;
     }
 
     if (timeout_ms == (uint64_t)-1) {
         if (::connect(m_sock, addr->getAddr(), addr->getAddrLen())) {
-            LT_LOG_ERROR(g_logger) << "sock=" << m_sock << " connect(" << addr->toString()
-                                      << ") error errno=" << errno << " errstr=" << strerror(errno);
+			g_logger->error("sock {},connect({}) error errno={} errstr={}", m_sock, addr->toString(), errno, strerror(errno));
             close();
             return false;
         }
     } else {
         if (::connect_with_timeout(m_sock, addr->getAddr(), addr->getAddrLen(), timeout_ms)) {
-            LT_LOG_ERROR(g_logger) << "sock=" << m_sock << " connect(" << addr->toString()
-                                      << ") timeout=" << timeout_ms << " error errno="
-                                      << errno << " errstr=" << strerror(errno);
+			g_logger->error("sock {},connect({})timeout={} error errno={} errstr={}", m_sock, addr->toString(), timeout_ms, errno, strerror(errno));
             close();
             return false;
         }
@@ -230,12 +219,11 @@ bool Socket::connect(const Address::ptr addr, uint64_t timeout_ms) {
 
 bool Socket::listen(int backlog) {
     if (!isValid()) {
-        LT_LOG_ERROR(g_logger) << "listen error sock=-1";
+		g_logger->error("listen error sock=-1");
         return false;
     }
     if (::listen(m_sock, backlog)) {
-        LT_LOG_ERROR(g_logger) << "listen error errno=" << errno
-                                  << " errstr=" << strerror(errno);
+		g_logger->error("listen error errno={},errstr={}",errno,strerror(errno));
         return false;
     }
     return true;
@@ -351,9 +339,8 @@ Address::ptr Socket::getRemoteAddress() {
         break;
     }
     socklen_t addrlen = result->getAddrLen();
-    if (getpeername(m_sock, result->getAddr(), &addrlen)) {
-        LT_LOG_ERROR(g_logger) << "getpeername error sock=" << m_sock
-                                  << " errno=" << errno << " errstr=" << strerror(errno);
+    if (getpeername(m_sock, result->getAddr(), &addrlen)) {;
+		g_logger->error("getpeername error sock={},errno={},errstr={}",m_sock,errno,strerror(errno));
         return Address::ptr(new UnknownAddress(m_family));
     }
     if (m_family == AF_UNIX) {
@@ -386,8 +373,7 @@ Address::ptr Socket::getLocalAddress() {
     }
     socklen_t addrlen = result->getAddrLen();
     if (getsockname(m_sock, result->getAddr(), &addrlen)) {
-        LT_LOG_ERROR(g_logger) << "getsockname error sock=" << m_sock
-                                  << " errno=" << errno << " errstr=" << strerror(errno);
+		g_logger->error("getpeername error sock={},errno={},errstr={}", m_sock, errno, strerror(errno));
         return Address::ptr(new UnknownAddress(m_family));
     }
     if (m_family == AF_UNIX) {
@@ -462,9 +448,8 @@ void Socket::newSock() {
     if (LT_LIKELY(m_sock != -1)) {
         initSock();
     } else {
-        LT_LOG_ERROR(g_logger) << "socket(" << m_family
-                                  << ", " << m_type << ", " << m_protocol << ") errno="
-                                  << errno << " errstr=" << strerror(errno);
+        		g_logger->error("sock family ={},type={} protocol={} errno={},errstr={}", 
+						m_family, m_type, m_protocol,errno, strerror(errno));
     }
 }
 
