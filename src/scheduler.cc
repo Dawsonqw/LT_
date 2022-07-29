@@ -1,10 +1,12 @@
+#include <vector>
 #include "scheduler.h"
+#include "log.h"
 #include "macro.h"
 #include "hook.h"
 
 namespace LT {
 
-    static LT::Logger::ptr g_logger = LT_LOG_NAME("system");
+static auto g_logger = std::make_shared<spdlog::logger>("root", g_sink);
 
 /// 当前线程的调度器，同一个调度器下的所有线程共享同一个实例
     static thread_local Scheduler *t_scheduler = nullptr;
@@ -52,7 +54,7 @@ namespace LT {
     }
 
     Scheduler::~Scheduler() {
-        LT_LOG_DEBUG(g_logger) << "Scheduler::~Scheduler()";
+		g_logger->debug("Scheduler::~Scheduler()");
         LT_ASSERT(m_stopping);
         if (GetThis() == this) {
             t_scheduler = nullptr;
@@ -60,10 +62,10 @@ namespace LT {
     }
 
     void Scheduler::start() {
-        LT_LOG_DEBUG(g_logger) << "start";
+		g_logger->info("start");
         MutexType::Lock lock(m_mutex);
         if (m_stopping) {
-            LT_LOG_ERROR(g_logger) << "Scheduler is stopped";
+			g_logger->error("Scheduler is stopped");
             return;
         }
         LT_ASSERT(m_threads.empty());
@@ -81,18 +83,18 @@ namespace LT {
     }
 
     void Scheduler::tickle() {
-        LT_LOG_DEBUG(g_logger) << "ticlke";
+		g_logger->debug("ticlke");
     }
 
     void Scheduler::idle() {
-        LT_LOG_DEBUG(g_logger) << "idle";
+		g_logger->debug("idle");
         while (!stopping()) {
             LT::Fiber::GetThis()->yield();
         }
     }
 
     void Scheduler::stop() {
-        LT_LOG_DEBUG(g_logger) << "stop";
+		g_logger->debug("stop");
         if (stopping()) {
             return;
         }
@@ -116,7 +118,7 @@ namespace LT {
         /// 在use caller情况下，调度器协程结束时，应该返回caller协程
         if (m_rootFiber) {
             m_rootFiber->resume();
-            LT_LOG_DEBUG(g_logger) << "m_rootFiber end";
+			g_logger->debug("m_rootFiber end");
         }
 
         std::vector<Thread::ptr> thrs;
@@ -130,7 +132,7 @@ namespace LT {
     }
 
     void Scheduler::run() {
-        LT_LOG_DEBUG(g_logger) << "run";
+		g_logger->debug("run");
         set_hook_enable(true);
         setThis();
         ///todo?
@@ -207,7 +209,7 @@ namespace LT {
                 // 进到这个分支情况一定是任务队列空了，调度idle协程即可
                 if (idle_fiber->getState() == Fiber::TERM) {
                     // 如果调度器没有调度任务，那么idle协程会不停地resume/yield，不会结束，如果idle协程结束了，那一定是调度器停止了
-                    LT_LOG_DEBUG(g_logger) << "idle fiber term";
+					g_logger->debug("idle fiber term");
                     break;
                 }
                 ++m_idleThreadCount;
@@ -215,7 +217,7 @@ namespace LT {
                 --m_idleThreadCount;
             }
         }
-        LT_LOG_DEBUG(g_logger) << "Scheduler::run() exit";
+		g_logger->debug("Scheduler::run() exit");
     }
 
 } // end namespace LT
