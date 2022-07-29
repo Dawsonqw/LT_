@@ -15,30 +15,21 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 #set(BOOST_COMPONENTS date_time chrono filesystem iostreams
 #        program_options regex system thread unit_test_framework)
 #find_package(Boost REQUIRED COMPONENTS ${BOOST_COMPONENTS})
-
-find_package(Boost REQUIRED)
-if(Boost_FOUND)
-    include_directories(${Boost_INCLUDE_DIRS})
-endif()
-
-include_directories(./include)
+include_directories(${PROJECT_SOURCE_DIR}/include)
 set(SOURCE_LIST
-        src/util.cc
+	    src/util.cc
         src/mutex.cc
-        src/thread.cc
-        src/fiber.cc
-        src/scheduler.cc
-        src/iomanager.cc
-        src/timer.cc
-        src/hook.cc
-        src/fd_manager.cc
-        src/bytearray.cc
-        src/address.cc
-        src/fd_manager.cc
-        src/socket.cc
-        src/tcp_server.cc
-        src/stream.cc
-        src/socket_stream.cc
+	    src/thread.cc
+		src/fiber.cc
+		src/scheduler.cc
+		src/iomanager.cc
+		src/timer.cc
+		src/hook.cc
+		src/fd_manager.cc
+		src/address.cc
+		src/fd_manager.cc
+		src/socket.cc
+		src/tcp_server.cc
         )
 
 add_library(LT STATIC ${SOURCE_LIST})
@@ -46,19 +37,20 @@ add_library(LT STATIC ${SOURCE_LIST})
 
 set(LIBRS
         LT
-        dl
-        yaml-cpp
         pthread
         )
 
 include_directories(./inlcude)
 #link_libraries(../lib)  这是一个添加库路径的命令 注意是全路径
 
+
+
 add_executable(test_thread tests/test_thread.cc)
 add_dependencies(test_thread LT)
 target_link_libraries(test_thread ${LIBRS})
 
 
+#[[
 add_executable(test_fiber tests/test_fiber.cc)
 add_dependencies(test_fiber LT)
 target_link_libraries(test_fiber ${LIBRS})
@@ -114,4 +106,4 @@ target_link_libraries(test_socket_tcp_s ${LIBRS})
 add_executable(test_tcp_server tests/test_tcp_server.cc)
 add_dependencies(test_tcp_server LT)
 target_link_libraries(test_tcp_server ${LIBRS})
-
+]]
