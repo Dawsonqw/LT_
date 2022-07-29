@@ -1,8 +1,9 @@
 #include "LT.h"
 
+
 ///注意：需要在关优化的情况下进行测试 否则优化后的代码与原来语义可能有差别
 
-LT::Logger::ptr g_logger = LT_LOG_ROOT();
+auto g_logger=std::make_shared<spdlog::logger>("gLog", g_sink);
 
 long count = 0;
 //LT::NullMutex s_mutex;
@@ -10,12 +11,10 @@ long count = 0;
 LT::Mutex s_mutex;
 
 void func1(void *arg) {
-    LT_LOG_INFO(g_logger) << "name:" << LT::Thread::GetName()
-                          << " this.name:" << LT::Thread::GetThis()->getName()
-                          << " thread name:" << LT::Thread::GetName()
-                          << " id:" << LT::GetThreadId()
-                          << " this.id:" << LT::Thread::GetThis()->getId();
-    LT_LOG_INFO(g_logger) << "arg: " << *(int*)arg;
+    //LT_LOG_INFO(g_logger) << "arg: " << *(int*)arg;
+	g_logger->info("name:{} this.name{},thread.name:{},id:{},this.id{}",
+			LT::Thread::GetName(),LT::Thread::GetThis()->getName(),LT::Thread::GetName(),
+			LT::GetThreadId(),LT::Thread::GetThis()->getId());
     for(int i = 0; i < 1000000; i++) {
 //        LT::RWMutex::WriteLock lock(s_mutex);///写锁 2ms  完成在3603ms
 //            LT::NullMutex::Lock lock(s_mutex);///没有锁的情况  结果显然不对 花费31  223ms
@@ -37,9 +36,6 @@ void test(void *arg){
 }
 
 int main(int argc, char *argv[]) {
-    LT::EnvMgr::GetInstance()->init(argc, argv);
-    LT::Config::LoadFromConfDir(LT::EnvMgr::GetInstance()->getConfigPath());
-
     std::vector<LT::Thread::ptr> thrs;
     int arg = 123456;
     for(int i = 0; i < 100; i++) {
@@ -51,8 +47,6 @@ int main(int argc, char *argv[]) {
     for(int i = 0; i < 100; i++) {
         thrs[i]->join();
     }
-
-    LT_LOG_INFO(g_logger) << "count = " <<count;
+	g_logger->info("count:{}",count);
     return 0;
 }
-
