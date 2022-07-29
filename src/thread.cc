@@ -8,7 +8,7 @@ namespace LT {
 static thread_local Thread *t_thread          = nullptr;
 static thread_local std::string t_thread_name = "UNKNOW";
 
-static LT::Logger::ptr g_logger = LT_LOG_NAME("system");
+static auto g_logger = std::make_shared<spdlog::logger>("root", g_sink);
 
 Thread *Thread::GetThis() {
     return t_thread;
@@ -36,8 +36,7 @@ Thread::Thread(std::function<void()> cb, const std::string &name)
     }
     int rt = pthread_create(&m_thread, nullptr, &Thread::run, this);
     if (rt) {
-        LT_LOG_ERROR(g_logger) << "pthread_create thread fail, rt=" << rt
-                                  << " name=" << name;
+		g_logger->error("pthread_create thread fail, rt={} name={}",rt,name);
         throw std::logic_error("pthread_create error");
     }
     ///这里信号量用于等待线程完全开启后退出构造
@@ -54,8 +53,7 @@ void Thread::join() {
     if (m_thread) {
         int rt = pthread_join(m_thread, nullptr);
         if (rt) {
-            LT_LOG_ERROR(g_logger) << "pthread_join thread fail, rt=" << rt
-                                      << " name=" << m_name;
+			g_logger->error("pthread_join thread fail, rt={} name={}", rt, m_name);
             throw std::logic_error("pthread_join error");
         }
         m_thread = 0;
@@ -72,7 +70,7 @@ void *Thread::run(void *arg) {
     thread->m_id   = LT::GetThreadId();
     pthread_setname_np(pthread_self(), thread->m_name.substr(0, 15).c_str());
 
-    ///todo:这里为什么要交换 直接执行也是可以的把
+	//显示释放
     std::function<void()> cb;
     cb.swap(thread->m_cb);
 
