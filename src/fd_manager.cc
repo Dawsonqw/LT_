@@ -104,5 +104,4 @@ void FdManager::del(int fd) {
     }
     m_datas[fd].reset();
 }
-
 }
