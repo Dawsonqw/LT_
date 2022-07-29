@@ -3,7 +3,6 @@
 
 #include <string.h>
 #include <assert.h>
-#include "log.h"
 #include "util.h"
 
 #if defined __GNUC__ || defined __llvm__
@@ -16,24 +15,44 @@
 #define LT_UNLIKELY(x) (x)
 #endif
 
+/*
+//auto g_logger = std::make_shared<spdlog::logger>("gLog", g_sink);
 /// 断言宏封装
-#define LT_ASSERT(x)                                                                \
+#define LT_ASSERT(x)                                                               \
     if (LT_UNLIKELY(!(x))) {                                                        \
-        LT_LOG_ERROR(LT_LOG_ROOT()) << "ASSERTION: " #x                          \
-                                          << "\nbacktrace:\n"                          \
-                                          << LT::BacktraceToString(100, 2, "    "); \
+     //   g_logger->error("ASSERTON:{} \n backtrace:\n{}"                              \ 
+	//			,x, LT::BacktraceToString(100, 2, "    "));                           \
         assert(x);                                                                     \
     }
 
 /// 断言宏封装
 #define LT_ASSERT2(x, w)                                                            \
     if (LT_UNLIKELY(!(x))) {                                                        \
-        LT_LOG_ERROR(LT_LOG_ROOT()) << "ASSERTION: " #x                          \
-                                          << "\n"                                      \
-                                          << w                                         \
-                                          << "\nbacktrace:\n"                          \
-                                          << LT::BacktraceToString(100, 2, "    "); \
+      //  g_logger->error("ASSERTON:{} \nbacktrace:\n{}",x, LT::BacktraceToString(100, 2, "    "));\
         assert(x);                                                                     \
     }
+*/
+
+#define LT_ASSERT(x)                                                               \
+    if (LT_UNLIKELY(!(x))) {                                                        \
+        assert(x);                                                                     \
+    }
+
+/// 断言宏封装
+#define LT_ASSERT2(x, w)                                                            \
+    if (LT_UNLIKELY(!(x))) {                                                        \
+        assert(x);                                                                     \
+    }
+
+
+
+
+
+
+
+
+
+
+
 
 #endif
