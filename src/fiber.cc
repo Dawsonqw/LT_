@@ -1,28 +1,22 @@
-
 #include <atomic>
 #include "fiber.h"
-#include "config.h"
 #include "log.h"
 #include "macro.h"
 #include "scheduler.h"
 
 namespace LT {
 
-static Logger::ptr g_logger = LT_LOG_NAME("system");
 
+static auto g_logger = std::make_shared<spdlog::logger>("root", g_sink);
 /// 全局静态变量，用于生成协程id
 static std::atomic<uint64_t> s_fiber_id{0};
 /// 全局静态变量，用于统计当前的协程数
 static std::atomic<uint64_t> s_fiber_count{0};
 
 /// 线程局部变量，当前线程正在运行的协程
-static thread_local Fiber *t_fiber = nullptr;
+static thread_local Fiber *p_cur_running_fiber = nullptr;
 /// 线程局部变量，当前线程的主协程，切换到这个协程，就相当于切换到了主线程中运行，智能指针形式
-static thread_local Fiber::ptr t_thread_fiber = nullptr;
-
-//协程栈大小，可通过配置文件获取，默认128k
-static ConfigVar<uint32_t>::ptr g_fiber_stack_size =
-    Config::Lookup<uint32_t>("fiber.stack_size", 128 * 1024, "fiber stack size");
+static thread_local Fiber::ptr main_fiber = nullptr;
 
 /**
  * @brief malloc栈内存分配器
@@ -37,8 +31,8 @@ using StackAllocator = MallocStackAllocator;
 
 ///当前运行协程id
 uint64_t Fiber::GetFiberId() {
-    if (t_fiber) {
-        return t_fiber->getId();
+    if (p_cur_running_fiber) {
+        return p_cur_running_fiber->getId();
     }
     return 0;
 }
@@ -53,12 +47,11 @@ Fiber::Fiber() {
 
     ++s_fiber_count;
     m_id = s_fiber_id++; // 协程id从0开始，用完加1
-
-    LT_LOG_DEBUG(g_logger) << "Fiber::Fiber() main id = " << m_id;
+	g_logger->debug("Fiber::Fiber() main id = {}",m_id);
 }
 
-void Fiber::SetThis(Fiber *f) { 
-    t_fiber = f; 
+void Fiber::SetThis(Fiber *fiber) { 
+    p_cur_running_fiber = fiber; 
 }
 
 /**
@@ -66,15 +59,15 @@ void Fiber::SetThis(Fiber *f) {
  * todo:这里将创建和返回主协程写在一起 可以分开
  */
 Fiber::ptr Fiber::GetThis() {
-    if (t_fiber) {
-        return t_fiber->shared_from_this();
+    if (p_cur_running_fiber) {
+        return p_cur_running_fiber->shared_from_this();
     }
 
     ///没有主协程存在
     Fiber::ptr main_fiber(new Fiber);
-    LT_ASSERT(t_fiber == main_fiber.get());
-    t_thread_fiber = main_fiber;
-    return t_fiber->shared_from_this();
+    LT_ASSERT(p_cur_running_fiber == main_fiber.get());
+    main_fiber = main_fiber;
+    return p_cur_running_fiber->shared_from_this();
 }
 
 /**
@@ -87,7 +80,7 @@ Fiber::Fiber(std::function<void()> cb, size_t stacksize, bool run_in_scheduler)
     ///回调实际上这里是作为一个私有数据成员 调用时机是在makecontext的入口函数中，也就是在发生swapcontext时
     ///而上下文的初始化仅仅设计栈空间 栈大小以及下一个指向 这里下一个指向没有赋值 因为无法控制
     ++s_fiber_count;
-    m_stacksize = stacksize ? stacksize : g_fiber_stack_size->getValue();
+    m_stacksize = stacksize ? stacksize : 128*1024;
     m_stack     = StackAllocator::Alloc(m_stacksize);
 
     if (getcontext(&m_ctx)) {
@@ -100,27 +93,27 @@ Fiber::Fiber(std::function<void()> cb, size_t stacksize, bool run_in_scheduler)
 
     makecontext(&m_ctx, &Fiber::MainFunc, 0);
 
-    LT_LOG_DEBUG(g_logger) << "Fiber::Fiber() id = " << m_id;
+	g_logger->debug("Fiber::Fiber() id = {}", m_id);
 }
 
 /**
  * 线程的主协程析构时需要特殊处理，因为主协程没有分配栈和cb
  */
 Fiber::~Fiber() {
-    LT_LOG_DEBUG(g_logger) << "Fiber::~Fiber() id = " << m_id;
+	g_logger->debug("Fiber::~Fiber() id = {}", m_id);
     --s_fiber_count;
     if (m_stack) {
         // 有栈，说明是子协程，需要确保子协程一定是结束状态
         LT_ASSERT(m_state == TERM);
         StackAllocator::Dealloc(m_stack, m_stacksize);
-        LT_LOG_DEBUG(g_logger) << "dealloc stack, id = " << m_id;
+		g_logger->debug("dealloc stack, id = {}", m_id);
     } else {
         // 没有栈，说明是线程的主协程
         LT_ASSERT(!m_cb);              // 主协程没有cb
         LT_ASSERT(m_state == RUNNING); // 主协程一定是执行状态
 
         ///todo:cur是不是有内存泄露？
-        Fiber *cur = t_fiber; // 当前协程就是自己
+        Fiber *cur = p_cur_running_fiber; // 当前协程就是自己
         if (cur == this) {
             SetThis(nullptr);
         }
@@ -159,7 +152,7 @@ void Fiber::resume() {
             LT_ASSERT2(false, "swapcontext");
         }
     } else {
-        if (swapcontext(&(t_thread_fiber->m_ctx), &m_ctx)) {
+        if (swapcontext(&(main_fiber->m_ctx), &m_ctx)) {
             LT_ASSERT2(false, "swapcontext");
         }
     }
@@ -168,7 +161,7 @@ void Fiber::resume() {
 void Fiber::yield() {
     /// 协程运行完之后会自动yield一次，用于回到主协程，此时状态已为结束状态
     LT_ASSERT(m_state == RUNNING || m_state == TERM);
-    SetThis(t_thread_fiber.get());
+    SetThis(main_fiber.get());
     if (m_state != TERM) {
         m_state = READY;
     }
@@ -179,7 +172,7 @@ void Fiber::yield() {
             LT_ASSERT2(false, "swapcontext");
         }
     } else {
-        if (swapcontext(&m_ctx, &(t_thread_fiber->m_ctx))) {
+        if (swapcontext(&m_ctx, &(main_fiber->m_ctx))) {
             LT_ASSERT2(false, "swapcontext");
         }
     }
@@ -190,13 +183,13 @@ void Fiber::yield() {
  */
 void Fiber::MainFunc() {
     Fiber::ptr cur = GetThis(); // GetThis()的shared_from_this()方法让引用计数加1
-    LT_ASSERT(cur);
+    //LT_ASSERT(cur);
 
     cur->m_cb();
     cur->m_cb    = nullptr;
     cur->m_state = TERM;
 
-    auto raw_ptr = cur.get(); // 手动让t_fiber的引用计数减1
+    auto raw_ptr = cur.get(); // 手动让p_cur_running_fiber的引用计数减1
     cur.reset();
     raw_ptr->yield();
 }
