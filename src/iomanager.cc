@@ -1,4 +1,5 @@
 #include <unistd.h>    // for pipe()
+#include <vector>
 #include <sys/epoll.h> // for epoll_xxx()
 #include <fcntl.h>     // for fcntl()
 #include "iomanager.h"
@@ -7,8 +8,7 @@
 
 namespace LT {
 
-static LT::Logger::ptr g_logger = LT_LOG_NAME("system");
-
+static auto g_logger = std::make_shared<spdlog::logger>("root", g_sink);
 enum EpollCtlOp {
 };
 
@@ -160,9 +160,7 @@ int IOManager::addEvent(int fd, Event event, std::function<void()> cb) {
     // 同一个fd不允许重复添加相同的事件
     FdContext::MutexType::Lock lock2(fd_ctx->mutex);
     if (LT_UNLIKELY(fd_ctx->events & event)) {
-        LT_LOG_ERROR(g_logger) << "addEvent assert fd=" << fd
-                                  << " event=" << (EPOLL_EVENTS)event
-                                  << " fd_ctx.event=" << (EPOLL_EVENTS)fd_ctx->events;
+		g_logger->error("addEvent assert fd={},event={},fd_ctx.event={}",fd, (EPOLL_EVENTS)event, (EPOLL_EVENTS)fd_ctx->events);
         LT_ASSERT(!(fd_ctx->events & event));
     }
 
@@ -174,10 +172,7 @@ int IOManager::addEvent(int fd, Event event, std::function<void()> cb) {
 
     int rt = epoll_ctl(m_epfd, op, fd, &epevent);
     if (rt) {
-        LT_LOG_ERROR(g_logger) << "epoll_ctl(" << m_epfd << ", "
-                                  << (EpollCtlOp)op << ", " << fd << ", " << (EPOLL_EVENTS)epevent.events << "):"
-                                  << rt << " (" << errno << ") (" << strerror(errno) << ") fd_ctx->events="
-                                  << (EPOLL_EVENTS)fd_ctx->events;
+		g_logger->error("epoll_ctl({},{},{},{}):{} ({}) ({}) fd_ctx->events={}", m_epfd, (EpollCtlOp)op, fd, (EPOLL_EVENTS)epevent.events, rt,errno,strerror(errno), (EPOLL_EVENTS)fd_ctx->events);
         return -1;
     }
 
@@ -223,9 +218,7 @@ bool IOManager::delEvent(int fd, Event event) {
 
     int rt = epoll_ctl(m_epfd, op, fd, &epevent);
     if (rt) {
-        LT_LOG_ERROR(g_logger) << "epoll_ctl(" << m_epfd << ", "
-                                  << (EpollCtlOp)op << ", " << fd << ", " << (EPOLL_EVENTS)epevent.events << "):"
-                                  << rt << " (" << errno << ") (" << strerror(errno) << ")";
+		g_logger->error("epoll_ctl({},{},{},{}) {} ({}) ({})",m_epfd, (EpollCtlOp)op,fd, (EPOLL_EVENTS)epevent.events,rt,errno,strerror(errno));
         return false;
     }
 
@@ -261,9 +254,7 @@ bool IOManager::cancelEvent(int fd, Event event) {
 
     int rt = epoll_ctl(m_epfd, op, fd, &epevent);
     if (rt) {
-        LT_LOG_ERROR(g_logger) << "epoll_ctl(" << m_epfd << ", "
-                                  << (EpollCtlOp)op << ", " << fd << ", " << (EPOLL_EVENTS)epevent.events << "):"
-                                  << rt << " (" << errno << ") (" << strerror(errno) << ")";
+		g_logger->error("epoll_ctl({},{},{},{}) {} ({}) ({})", m_epfd, (EpollCtlOp)op, fd, (EPOLL_EVENTS)epevent.events, rt, errno, strerror(errno));
         return false;
     }
 
@@ -296,9 +287,7 @@ bool IOManager::cancelAll(int fd) {
 
     int rt = epoll_ctl(m_epfd, op, fd, &epevent);
     if (rt) {
-        LT_LOG_ERROR(g_logger) << "epoll_ctl(" << m_epfd << ", "
-                                  << (EpollCtlOp)op << ", " << fd << ", " << (EPOLL_EVENTS)epevent.events << "):"
-                                  << rt << " (" << errno << ") (" << strerror(errno) << ")";
+		g_logger->error("epoll_ctl({},{},{},{}) {} ({}) ({})", m_epfd, (EpollCtlOp)op, fd, (EPOLL_EVENTS)epevent.events, rt, errno, strerror(errno));
         return false;
     }
 
@@ -326,7 +315,7 @@ IOManager *IOManager::GetThis() {
  * 如果没有调度线程处理于idle状态，那也就没必要发通知了
  */
 void IOManager::tickle() {
-    LT_LOG_DEBUG(g_logger) << "tickle";
+	g_logger->debug("tickle");
     if(!hasIdleThreads()) {
         return;
     }
@@ -353,8 +342,7 @@ bool IOManager::stopping(uint64_t &timeout) {
  * IO事件对应的回调函数
  */
 void IOManager::idle() {
-    LT_LOG_DEBUG(g_logger) << "idle";
-
+	g_logger->debug("idle");
     // 一次epoll_wait最多检测256个就绪事件，如果就绪事件超过了这个数，那么会在下轮epoll_wati继续处理
     const uint64_t MAX_EVNETS = 1024;
     epoll_event *events       = new epoll_event[MAX_EVNETS]();
@@ -366,7 +354,7 @@ void IOManager::idle() {
         // 获取下一个定时器的超时时间，顺便判断调度器是否停止
         uint64_t next_timeout = 0;
         if( LT_UNLIKELY(stopping(next_timeout))) {
-            LT_LOG_DEBUG(g_logger) << "name=" << getName() << "idle stopping exit";
+			g_logger->debug("name={},idle stopping exit");
             break;
         }
 
@@ -438,9 +426,7 @@ void IOManager::idle() {
 
             int rt2 = epoll_ctl(m_epfd, op, fd_ctx->fd, &event);
             if (rt2) {
-                LT_LOG_ERROR(g_logger) << "epoll_ctl(" << m_epfd << ", "
-                                          << (EpollCtlOp)op << ", " << fd_ctx->fd << ", " << (EPOLL_EVENTS)event.events << "):"
-                                          << rt2 << " (" << errno << ") (" << strerror(errno) << ")";
+				g_logger->error("epoll_ctl({},{},{},{}) {} ({}) ({})", m_epfd, (EpollCtlOp)op, fd_ctx->fd, (EPOLL_EVENTS)event.events, rt2, errno, strerror(errno));
                 continue;
             }
 
