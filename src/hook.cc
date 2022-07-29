@@ -1,19 +1,15 @@
 #include "hook.h"
 #include <dlfcn.h>
 
-#include "config.h"
 #include "log.h"
 #include "fiber.h"
 #include "iomanager.h"
 #include "fd_manager.h"
 #include "macro.h"
 
-LT::Logger::ptr g_logger = LT_LOG_NAME("system");
 namespace LT {
 
-static LT::ConfigVar<int>::ptr g_tcp_connect_timeout =
-    LT::Config::Lookup("tcp.connect.timeout", 5000, "tcp connect timeout");
-
+static auto g_logger = std::make_shared<spdlog::logger>("root", g_sink);
 static thread_local bool t_hook_enable = false;
 
     //小技巧，宏定义传参方便初始化
@@ -64,14 +60,8 @@ static uint64_t s_connect_timeout = -1;
 struct _HookIniter {
     _HookIniter() {
         hook_init();
-        s_connect_timeout = g_tcp_connect_timeout->getValue();
-
-        g_tcp_connect_timeout->addListener([](const int& old_value, const int& new_value){
-                LT_LOG_INFO(g_logger) << "tcp connect timeout changed from "
-                                         << old_value << " to " << new_value;
-                s_connect_timeout = new_value;
-        });
-    }
+		s_connect_timeout = 5000;
+        };
 };
 
 static _HookIniter s_hook_initer;
@@ -137,8 +127,7 @@ retry:
 
         int rt = iom->addEvent(fd, (LT::IOManager::Event)(event));
         if(LT_UNLIKELY(rt)) {
-            LT_LOG_ERROR(g_logger) << hook_fun_name << " addEvent("
-                << fd << ", " << event << ")";
+		//	g_logger->error("addEvent",fd,event);
             if(timer) {
                 timer->cancel();
             }
@@ -280,7 +269,7 @@ int connect_with_timeout(int fd, const struct sockaddr* addr, socklen_t addrlen,
         if(timer) {
             timer->cancel();
         }
-        LT_LOG_ERROR(g_logger) << "connect addEvent(" << fd << ", WRITE) error";
+		//g_logger->error("connect addEvent({},WRITE) error",fd);
     }
 
     int error = 0;
