@@ -7,7 +7,6 @@
 #include "iomanager.h"
 #include "socket.h"
 #include "noncopyable.h"
-#include "config.h"
 
 namespace LT {
 /**
