@@ -37,6 +37,7 @@ add_library(LT STATIC ${SOURCE_LIST})
 
 set(LIBRS
         LT
+		dl
         pthread
         )
 
@@ -50,7 +51,6 @@ add_dependencies(test_thread LT)
 target_link_libraries(test_thread ${LIBRS})
 
 
-#[[
 add_executable(test_fiber tests/test_fiber.cc)
 add_dependencies(test_fiber LT)
 target_link_libraries(test_fiber ${LIBRS})
@@ -58,6 +58,7 @@ target_link_libraries(test_fiber ${LIBRS})
 add_executable(test_fiber2 tests/test_fiber2.cc)
 add_dependencies(test_fiber2 LT)
 target_link_libraries(test_fiber2 ${LIBRS})
+
 
 add_executable(test_iomanager tests/test_iomanager.cc)
 add_dependencies(test_iomanager LT)
@@ -85,14 +86,11 @@ add_executable(test_util tests/test_util.cpp)
 add_dependencies(test_util LT)
 target_link_libraries(test_util ${LIBRS})
 
-add_executable(test_address tests/test_address.cc)
-add_dependencies(test_address LT)
-target_link_libraries(test_address ${LIBRS})
+#add_executable(test_address tests/test_address.cc)
+#add_dependencies(test_address LT)
+#target_link_libraries(test_address ${LIBRS})
 
 
-add_executable(test_bytearray tests/test_bytearray.cc)
-add_dependencies(test_bytearray LT)
-target_link_libraries(test_bytearray ${LIBRS})
 
 add_executable(test_socket_tcp_c tests/test_socket_tcp_client.cc)
 add_dependencies(test_socket_tcp_c LT)
@@ -106,4 +104,3 @@ target_link_libraries(test_socket_tcp_s ${LIBRS})
 add_executable(test_tcp_server tests/test_tcp_server.cc)
 add_dependencies(test_tcp_server LT)
 target_link_libraries(test_tcp_server ${LIBRS})
-]]

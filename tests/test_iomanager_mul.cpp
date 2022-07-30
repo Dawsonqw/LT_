@@ -5,33 +5,26 @@
 #include <arpa/inet.h>
 #include <fcntl.h>
 
-LT::Logger::ptr iomanager = LT_LOG_NAME("iomanger_log");
+auto g_logger=std::make_shared<spdlog::logger>("gLog", g_sink);
 
 int sockfd;
 
 void iom_cb(){
-    LT_LOG_INFO(iomanager)<<"iom_cb start";
+    g_logger->info("cb start");
     LT::IOManager::GetThis()->delEvent(sockfd,LT::IOManager::READ);
     LT::IOManager::GetThis()->addEvent(sockfd,LT::IOManager::READ,iom_cb);///重复注册一直递归处理
-    LT_LOG_INFO(iomanager)<<"iom_cb start";
+    g_logger->info("cb end");
 }
 void iom_cb1(){
-    LT_LOG_INFO(iomanager)<<"iom_cb1 start";
+    g_logger->info("cb start");
     LT::Scheduler::GetThis()->schedule(LT::Fiber::GetThis());
     LT::Fiber::GetThis()->yield();
-    LT_LOG_INFO(iomanager)<<"iom_cb1 end";
+    g_logger->info("cb end");
 }
 
 
 
 int main(int argc, char *argv[]) {
-
-    LT::LogFormatter::ptr formatter(new LT::LogFormatter);
-    LT::LogAppender::ptr appender(new LT::StdoutLogAppender);
-    appender->setFormatter(formatter);
-    iomanager->addAppender(appender);
-    iomanager->setLevel(LT::LogLevel::INFO);
-
     ///注册一个fd   添加读写事件
 
     sockfd= socket(AF_INET,SOCK_STREAM,0);
@@ -56,7 +49,7 @@ int main(int argc, char *argv[]) {
     bind(sock_fd,(sockaddr*)&servaddr_,sizeof (servaddr_));
     listen(sockfd,5);
     listen(sock_fd,10);
-    LT_LOG_INFO(iomanager) << "main start";
+    g_logger->info("main start");
 
 
     LT::IOManager iom;
@@ -65,7 +58,7 @@ int main(int argc, char *argv[]) {
     LT::IOManager::GetThis()->addEvent(sockfd,LT::IOManager::READ,iom_cb);///只能触发一次
 
     LT::IOManager::GetThis()->addEvent(sock_fd,LT::IOManager::READ,[](){
-        LT_LOG_INFO(iomanager)<<"sock_fd have received";
+        g_logger->info("received");
     });
 
 //    iom.cancelAll(sock_fd);
@@ -74,7 +67,7 @@ int main(int argc, char *argv[]) {
 
 
     iom.stop();
-    LT_LOG_INFO(iomanager) << "main end";
+    g_logger->info("main end");
     return 0;
 }
 //

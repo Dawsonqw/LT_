@@ -52,7 +52,7 @@ void hook_init() {
     }
     ///##是连接符号 比如 xx##yy 实际就是 xxyy
 #define XX(name) name ## _f = (name ## _fun)dlsym(RTLD_NEXT, #name);
-    HOOK_FUN(XX);////实际上是两个宏进行替换 HOOK_FUN(XX)-> XX(sleep)--> sleep_f=(sleep_fun)dlsym(RTLD_NEXT,sleep);
+    HOOK_FUN(XX);////实际上是两个宏进行替换 HOOK_FUN(XX)-> XX(sleep)--> sleep_f=(sleep_fun)dlsym(XX,sleep);
 #undef XX
 }
 
@@ -60,7 +60,7 @@ static uint64_t s_connect_timeout = -1;
 struct _HookIniter {
     _HookIniter() {
         hook_init();
-		s_connect_timeout = 5000;
+	s_connect_timeout = 5000;
         };
 };
 

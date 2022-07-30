@@ -5,13 +5,13 @@
 #include <arpa/inet.h>
 #include <fcntl.h>
 
-static LT::Logger::ptr g_logger = LT_LOG_ROOT();
+auto g_logger=std::make_shared<spdlog::logger>("gLog", g_sink);
 
 /**
  * @brief 测试sleep被hook之后的浆果
  */
 void test_sleep() {
-    LT_LOG_INFO(g_logger) << "test_sleep begin";
+    g_logger->info("sleep begin");
     LT::IOManager iom;
     
     /**
@@ -20,15 +20,14 @@ void test_sleep() {
      */
     iom.schedule([] {
         sleep(2);
-        LT_LOG_INFO(g_logger) << "sleep 2";
+        g_logger->info("sleep 2");
     });
 
     iom.schedule([] {
         sleep(3);
-        LT_LOG_INFO(g_logger) << "sleep 3";
+        g_logger->info("sleep 3");
     });
-
-    LT_LOG_INFO(g_logger) << "test_sleep end";
+    g_logger->info("sleep end");
 }
 
 /**
@@ -40,22 +39,21 @@ void test_sock() {
     sockaddr_in addr;
     memset(&addr, 0, sizeof(addr));
     addr.sin_family = AF_INET;
-    addr.sin_port = htons(80);
-    inet_pton(AF_INET, "36.152.44.96", &addr.sin_addr.s_addr);
+    addr.sin_port = htons(8080);
+    inet_pton(AF_INET, "127.0.0.1", &addr.sin_addr.s_addr);
 
-    LT_LOG_INFO(g_logger) << "begin connect";
-    int rt = connect(sock, (const sockaddr*)&addr, sizeof(addr));
-    LT_LOG_INFO(g_logger) << "connect rt=" << rt << " errno=" << errno;
+    g_logger->info("connect ");
+    int rt = connect(sock, (const sockaddr *) &addr, sizeof(addr));
+    g_logger->info("connect rt={} errno={}", rt, errno);
 
-    if(rt) {
+    if (rt) {
         return;
     }
 
     const char data[] = "GET / HTTP/1.0\r\n\r\n";
     rt = send(sock, data, sizeof(data), 0);
-    LT_LOG_INFO(g_logger) << "send rt=" << rt << " errno=" << errno;
-
-    if(rt <= 0) {
+    g_logger->info("send rt={} errno={}", rt, errno);
+    if (rt <= 0) {
         return;
     }
 
@@ -63,19 +61,19 @@ void test_sock() {
     buff.resize(4096);
 
     rt = recv(sock, &buff[0], buff.size(), 0);
-    LT_LOG_INFO(g_logger) << "recv rt=" << rt << " errno=" << errno;
+    g_logger->info("recv rt={} errno={}", rt, errno);
+    if (rt <= 0) {
 
-    if(rt <= 0) {
-        return;
+        if (rt <= 0) {
+            return;
+        }
+
+        buff.resize(rt);
+        g_logger->info("buf:{}", buff);
     }
-
-    buff.resize(rt);
-    LT_LOG_INFO(g_logger) << buff;
 }
 
 int main(int argc, char *argv[]) {
-    LT::EnvMgr::GetInstance()->init(argc, argv);
-    LT::Config::LoadFromConfDir(LT::EnvMgr::GetInstance()->getConfigPath());
 
     // test_sleep();
 
@@ -83,6 +81,6 @@ int main(int argc, char *argv[]) {
     LT::IOManager iom;
     iom.schedule(test_sock);
 
-    LT_LOG_INFO(g_logger) << "main end";
+    g_logger->info("begin");
     return 0;
 }

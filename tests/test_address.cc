@@ -1,6 +1,6 @@
 #include "LT.h"
 
-static LT::Logger::ptr g_logger = LT_LOG_ROOT();
+auto g_logger=std::make_shared<spdlog::logger>("gLog", g_sink);
 
 const char *family2str(int family) {
     switch (family) {
@@ -20,20 +20,17 @@ const char *family2str(int family) {
  * @param[in] family 地址类型
  */
 void test_ifaces(int family) {
-    LT_LOG_INFO(g_logger) << "test_ifaces: " << family2str(family);
+    g_logger->info("test frace:{}", family2str(family));
 
     std::multimap<std::string, std::pair<LT::Address::ptr, uint32_t>> results;
     bool v = LT::Address::GetInterfaceAddresses(results, family);
     if (!v) {
-        LT_LOG_ERROR(g_logger) << "GetInterfaceAddresses fail";
+        g_logger->info("GetInterfaceAddresses fail");
         return;
     }
     for (auto &i : results) {
-        LT_LOG_INFO(g_logger) << i.first << " - " << i.second.first->toString() << " - "
-                                 << i.second.second;
+        g_logger->info("i.fist{}-i.second{} -i.second.second{}",i.first,i.second.first,i.second.second);
     }
-    
-    LT_LOG_INFO(g_logger) << "\n";
 }
 
 /**
@@ -42,19 +39,16 @@ void test_ifaces(int family) {
  * @param[in] family 地址类型
  */
 void test_iface(const char *iface, int family) {
-    LT_LOG_INFO(g_logger) << "test_iface: " << iface << ", " << family2str(family);
-
+    g_logger->info("test frace:{}", family2str(family));
     std::vector<std::pair<LT::Address::ptr, uint32_t>> result;
     bool v = LT::Address::GetInterfaceAddresses(result, iface, family);
     if(!v) {
-        LT_LOG_ERROR(g_logger) << "GetInterfaceAddresses fail";
+        g_logger->error("GetInterfaceAddresses fail");
         return;
     }
     for(auto &i : result) {
-        LT_LOG_INFO(g_logger) << i.first->toString() << " - " << i.second;
+        g_logger->info("i.fist {} - i.second {}",i.first->toString(),i.second);
     }
-
-    LT_LOG_INFO(g_logger) << "\n";
 }
 
 /**
@@ -63,94 +57,72 @@ void test_iface(const char *iface, int family) {
  * @note 这里没有区分不同的套接字类型，所以会有重复值
  */
 void test_lookup(const char *host) {
-    LT_LOG_INFO(g_logger) << "test_lookup: " << host;
-
-    LT_LOG_INFO(g_logger) <<"Lookup:";
+    g_logger->info("loop up");
     std::vector<LT::Address::ptr> results;
     bool v = LT::Address::Lookup(results, host, AF_INET);
     if(!v) {
-        LT_LOG_ERROR(g_logger) << "Lookup fail";
+        g_logger->error("look up failed");
         return;
     }
     for(auto &i : results) {
-        LT_LOG_INFO(g_logger) << i->toString();
+        g_logger->error("{}",i->toString());
     }
-    
-    LT_LOG_INFO(g_logger) <<"LookupAny:";
+
+    g_logger->info("lookup any");
     auto addr2 = LT::Address::LookupAny(host);
-    LT_LOG_INFO(g_logger) << addr2->toString();
+    g_logger->info("{}",addr2->toString());
 
-    LT_LOG_INFO(g_logger) <<"LookupAnyIPAddress:";
+    g_logger->info("LookupAnyIPAddress:");
     auto addr1 = LT::Address::LookupAnyIPAddress(host);
-    LT_LOG_INFO(g_logger) << addr1->toString();
-
-    LT_LOG_INFO(g_logger) << "\n";
+    g_logger->info("{}",addr1->toString());
 }
 
 /**
  * @brief IPv4地址类测试
  */
 void test_ipv4() {
-    LT_LOG_INFO(g_logger) << "test_ipv4";
+    g_logger->info("ipv4");
 
     auto addr = LT::IPAddress::Create("192.168.1.120");
     if (!addr) {
-        LT_LOG_ERROR(g_logger) << "IPAddress::Create error";
+        g_logger->error("IPAddress::Create error");
         return;
     }
-    LT_LOG_INFO(g_logger) << "addr: " << addr->toString();
-    LT_LOG_INFO(g_logger) << "family: " << family2str(addr->getFamily());  
-    LT_LOG_INFO(g_logger) << "port: " << addr->getPort();  
-    LT_LOG_INFO(g_logger) << "addr length: " << addr->getAddrLen(); 
-
-    LT_LOG_INFO(g_logger) << "broadcast addr: " << addr->broadcastAddress(24)->toString();
-    LT_LOG_INFO(g_logger) << "network addr: " << addr->networkAddress(24)->toString();
-    LT_LOG_INFO(g_logger) << "subnet mask addr: " << addr->subnetMask(24)->toString();
-
-    LT_LOG_INFO(g_logger) << "\n";
+    g_logger->info("addr {} family {} port {} addr len {} baddr {} naddr {} smask addr{}",
+                   addr->toString(), family2str(addr->getFamily()),addr->getPort(),addr->getAddrLen(),
+                   addr->broadcastAddress(24)->toString(),addr->networkAddress(24)->toString(),
+                   addr->subnetMask(24)->toString());
 }
 
 /**
  * @brief IPv6地址类测试
  */
 void test_ipv6() {
-    LT_LOG_INFO(g_logger) << "test_ipv6";
+    g_logger->info("ipv6");
 
     auto addr = LT::IPAddress::Create("fe80::215:5dff:fe88:d8a");
     if (!addr) {
-        LT_LOG_ERROR(g_logger) << "IPAddress::Create error";
+        g_logger->error("IPAddress::Create error");
         return;
     }
-    LT_LOG_INFO(g_logger) << "addr: " << addr->toString();
-    LT_LOG_INFO(g_logger) << "family: " << family2str(addr->getFamily());  
-    LT_LOG_INFO(g_logger) << "port: " << addr->getPort();  
-    LT_LOG_INFO(g_logger) << "addr length: " << addr->getAddrLen(); 
-
-    LT_LOG_INFO(g_logger) << "broadcast addr: " << addr->broadcastAddress(64)->toString();
-    LT_LOG_INFO(g_logger) << "network addr: " << addr->networkAddress(64)->toString();
-    LT_LOG_INFO(g_logger) << "subnet mask addr: " << addr->subnetMask(64)->toString();
-    LT_LOG_INFO(g_logger) << "\n";
+    g_logger->info("addr {} family {} port {} addr len {} baddr {} naddr {} smask addr{}",
+                   addr->toString(), family2str(addr->getFamily()),addr->getPort(),addr->getAddrLen(),
+                   addr->broadcastAddress(24)->toString(),addr->networkAddress(24)->toString(),
+                   addr->subnetMask(24)->toString());
 }
 
 /**
  * @brief Unix套接字解析
  */
 void test_unix() {
-    LT_LOG_INFO(g_logger) << "test_unix";
-    
-    auto addr = LT::UnixAddress("/tmp/test_unix.sock");
-    LT_LOG_INFO(g_logger) << "addr: " << addr.toString();
-    LT_LOG_INFO(g_logger) << "family: " << family2str(addr.getFamily());  
-    LT_LOG_INFO(g_logger) << "path: " << addr.getPath(); 
-    LT_LOG_INFO(g_logger) << "addr length: " << addr.getAddrLen(); 
+    g_logger->info("unix");
 
-    LT_LOG_INFO(g_logger) << "\n";
+    auto addr = LT::UnixAddress("/tmp/test_unix.sock");
+    g_logger->info("addr {} family {} path {} addrlen {}",addr.toString(), family2str(addr.getFamily()),
+                   addr.getPath(),addr.getAddrLen());
 }
 
 int main(int argc, char *argv[]) {
-    LT::EnvMgr::GetInstance()->init(argc, argv);
-    LT::Config::LoadFromConfDir(LT::EnvMgr::GetInstance()->getConfigPath());
-
     // 获取本机所有网卡的IPv4地址和IPv6地址以及掩码长度
     test_ifaces(AF_INET);
     test_ifaces(AF_INET6);

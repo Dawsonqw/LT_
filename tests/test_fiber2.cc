@@ -32,43 +32,41 @@
 
 
 
-LT::Logger::ptr logger= LT_LOG_NAME("fiber_test");
+auto g_logger=std::make_shared<spdlog::logger>("gLog", g_sink);
 
 ////由于是自己分配空间 如果空间分配不够会出错 默认是128*1024字节 也就是128k
 void fiber_cb(){
-    LT_LOG_INFO(logger)<<"fiber_cb begin()";
-    LT_LOG_INFO(logger)<<" fiber_cb  start";
+    g_logger->info("cb begin");
 ///手动挂起 当前协程让出执行权 返回到主协程 也就是进入ucontext的u_next指向的上下文中
     LT::Fiber::GetThis()->yield();
-    LT_LOG_INFO(logger)<<"fiber_cb  end";
+    g_logger->info("cb end");
 }
 
 void fiber_cb_reset(){
-    LT_LOG_INFO(logger)<<"fiber_cb_reset begin";
+    g_logger->info("cbreset begin");
     LT::Fiber::GetThis()->yield();
-    LT_LOG_INFO(logger)<<"fiber_cb_reset end";
+    g_logger->info("cbreset end");
 }
 void fiber_cb_test(){
-    LT_LOG_INFO(logger)<<"fiber_cb_test begin";
+    g_logger->info("cbreset_test start");
     LT::Fiber::GetThis()->yield();///当前协程主动yield
-    LT_LOG_INFO(logger)<<"fiber_cb_test end";
+    g_logger->info("cbreset_test end");
 }
 void test_cb(){
-    LT_LOG_INFO(logger)<<"testfiber begin";
-
+    g_logger->info("test begin");
     LT::Fiber::GetThis();///返回当前线程正在执行的协程 如果没有就创建一个主协程作为当前运行的协程也就是被调用的普通协程（此时两者指向同一个协程对象）
 
     ///构造一个普通被调用协程
     LT::Fiber::ptr fiber(new LT::Fiber(fiber_cb,128*1024, false));
 
-    LT_LOG_INFO(logger)<<"before test_cb resume ";
+    g_logger->info("test resume");
 
     fiber->resume();///首先将当前上下文保存起来 也就是包存到主协程的上下文环境后进入fiber协程指向的普通协程上下文
 
 ///由于已经有了一个主协程 此时再通过LT::Fiber::GetThis()拿到的是一个当前运行的协程
 //    LT::Fiber::ptr test=LT::Fiber::GetThis();///拿到的是主协程吧这里 这里是主协程吧
 
-    LT_LOG_INFO(logger)<<"after test_cb resume ";
+    g_logger->info("test resume");
     fiber->resume();
 //    fiber->resume();
 
@@ -76,7 +74,7 @@ void test_cb(){
 ///复用已经创建好的协程
     fiber->reset(fiber_cb_reset);
     fiber->resume();///resume把fiber的控制权交给绑定的回调  yield把控制权交还
-    LT_LOG_INFO(logger)<<"reset into again";
+    g_logger->info("resume aggain");
     fiber->resume();
 
     LT::Fiber::ptr fiber1(new LT::Fiber(fiber_cb_test,128*1024,0));
@@ -86,18 +84,9 @@ void test_cb(){
 }
 
 int main(int argc,char* argv[]){
-
-    LT::LogFormatter::ptr formatter(new LT::LogFormatter);
-    LT::LogAppender::ptr Conappender(new LT::StdoutLogAppender);
-    Conappender->setFormatter(formatter);
-    logger->addAppender(Conappender);
-    logger->setLevel(LT::LogLevel::INFO);
-
-    LT::SetThreadName("main_fiber");
-    LT_LOG_INFO(logger)<<"main start";
-
     std::vector<LT::Thread::ptr>thrs;
 
+    g_logger->info("main begin");
     for(int i=0;i<15;i++){
         thrs.push_back(LT::Thread::ptr(new LT::Thread(&test_cb,"thread_"+std::to_string(i))));
     }
@@ -106,7 +95,6 @@ int main(int argc,char* argv[]){
         thrs[i]->join();
     }
 
-
-    LT_LOG_INFO(logger)<<"main end";
+    g_logger->info("main end");
     return 0;
 }

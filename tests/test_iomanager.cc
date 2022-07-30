@@ -5,39 +5,40 @@
 #include <arpa/inet.h>
 #include <fcntl.h>
 
-LT::Logger::ptr g_logger = LT_LOG_ROOT();
+
+auto g_logger=std::make_shared<spdlog::logger>("gLog", g_sink);
 
 int sockfd;
 void watch_io_read();
 
 // 写事件回调，只执行一次，用于判断非阻塞套接字connect成功
 void do_io_write() {
-    LT_LOG_INFO(g_logger) << "write callback";
+    g_logger->info("write cb");
     int so_err;
     socklen_t len = size_t(so_err);
     getsockopt(sockfd, SOL_SOCKET, SO_ERROR, &so_err, &len);
     if(so_err) {
-        LT_LOG_INFO(g_logger) << "connect fail";
+        g_logger->info("connect failed");
         return;
-    } 
-    LT_LOG_INFO(g_logger) << "connect success";
+    }
+    g_logger->info("connect suc");
 }
 
 // 读事件回调，每次读取之后如果套接字未关闭，需要重新添加
 void do_io_read() {
-    LT_LOG_INFO(g_logger) << "read callback";
+    g_logger->info("read cb");
     char buf[1024] = {0};
     int readlen = 0;
     readlen = read(sockfd, buf, sizeof(buf));
     if(readlen > 0) {
         buf[readlen] = '\0';
-        LT_LOG_INFO(g_logger) << "read " << readlen << " bytes, read: " << buf;
+        g_logger->info("readlen :{},buf:{}",readlen,buf);
     } else if(readlen == 0) {
-        LT_LOG_INFO(g_logger) << "peer closed";
+        g_logger->info("close");
         close(sockfd);
         return;
     } else {
-        LT_LOG_ERROR(g_logger) << "err, errno=" << errno << ", errstr=" << strerror(errno);
+        g_logger->info("errno:{} errstr:{}",errno, strerror(errno));
         close(sockfd);
         return;
     }
@@ -46,7 +47,7 @@ void do_io_read() {
 }
 
 void watch_io_read() {
-    LT_LOG_INFO(g_logger) << "watch_io_read";
+    g_logger->info("read");
     LT::IOManager::GetThis()->addEvent(sockfd, LT::IOManager::READ, do_io_read);
 }
 
@@ -59,22 +60,22 @@ void test_io() {
     memset(&servaddr, 0, sizeof(servaddr));
     servaddr.sin_family = AF_INET;
     servaddr.sin_port = htons(1234);
-    inet_pton(AF_INET, "10.10.19.159", &servaddr.sin_addr.s_addr);
+    inet_pton(AF_INET, "127.0.0.1", &servaddr.sin_addr.s_addr);
 
     int rt = connect(sockfd, (const sockaddr*)&servaddr, sizeof(servaddr));
     if(rt != 0) {
         if(errno == EINPROGRESS) {
-            LT_LOG_INFO(g_logger) << "EINPROGRESS";
+            g_logger->info("einprogress");
             // 注册写事件回调，只用于判断connect是否成功
             // 非阻塞的TCP套接字connect一般无法立即建立连接，要通过套接字可写来判断connect是否已经成功
             LT::IOManager::GetThis()->addEvent(sockfd, LT::IOManager::WRITE, do_io_write);
             // 注册读事件回调，注意事件是一次性的
             LT::IOManager::GetThis()->addEvent(sockfd, LT::IOManager::READ, do_io_read);
         } else {
-            LT_LOG_ERROR(g_logger) << "connect error, errno:" << errno << ", errstr:" << strerror(errno);
+            g_logger->info("connect error:{} errstr {}",errno, strerror(errno));
         }
     } else {
-        LT_LOG_ERROR(g_logger) << "else, errno:" << errno << ", errstr:" << strerror(errno);
+        g_logger->info("connect error:{} errstr {}",errno, strerror(errno));
     }
 }
 
@@ -85,9 +86,7 @@ void test_iomanager() {
 }
 
 int main(int argc, char *argv[]) {
-    LT::EnvMgr::GetInstance()->init(argc, argv);
-    LT::Config::LoadFromConfDir(LT::EnvMgr::GetInstance()->getConfigPath());
-    
+
     test_iomanager();
 
     return 0;

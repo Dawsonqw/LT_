@@ -5,6 +5,7 @@
 #include "log.h"
 #include "macro.h"
 #include "hook.h"
+#include "util.h"
 #include <limits.h>
 
 namespace LT {
@@ -162,7 +163,7 @@ bool Socket::bind(const Address::ptr addr) {
         if (sock->connect(uaddr)) {
             return false;
         } else {
-            Unlink(uaddr->getPath(), true);
+            //Unlink(uaddr->getPath(), true);
         }
     }
 

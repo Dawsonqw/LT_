@@ -6,7 +6,6 @@
 
 namespace LT {
 
-
 static auto g_logger = std::make_shared<spdlog::logger>("root", g_sink);
 /// 全局静态变量，用于生成协程id
 static std::atomic<uint64_t> s_fiber_id{0};
@@ -50,8 +49,8 @@ Fiber::Fiber() {
 	g_logger->debug("Fiber::Fiber() main id = {}",m_id);
 }
 
-void Fiber::SetThis(Fiber *fiber) { 
-    p_cur_running_fiber = fiber; 
+void Fiber::SetThis(Fiber *fiber) {
+    p_cur_running_fiber = fiber;
 }
 
 /**
@@ -64,9 +63,9 @@ Fiber::ptr Fiber::GetThis() {
     }
 
     ///没有主协程存在
-    Fiber::ptr main_fiber(new Fiber);
-    LT_ASSERT(p_cur_running_fiber == main_fiber.get());
-    main_fiber = main_fiber;
+    Fiber::ptr m_fiber(new Fiber);
+    LT_ASSERT(p_cur_running_fiber == m_fiber.get());
+     main_fiber= m_fiber;
     return p_cur_running_fiber->shared_from_this();
 }
 
@@ -80,7 +79,7 @@ Fiber::Fiber(std::function<void()> cb, size_t stacksize, bool run_in_scheduler)
     ///回调实际上这里是作为一个私有数据成员 调用时机是在makecontext的入口函数中，也就是在发生swapcontext时
     ///而上下文的初始化仅仅设计栈空间 栈大小以及下一个指向 这里下一个指向没有赋值 因为无法控制
     ++s_fiber_count;
-    m_stacksize = stacksize ? stacksize : 128*1024;
+    m_stacksize = 128*1024;
     m_stack     = StackAllocator::Alloc(m_stacksize);
 
     if (getcontext(&m_ctx)) {
