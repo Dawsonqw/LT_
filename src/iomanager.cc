@@ -337,16 +337,19 @@ bool IOManager::stopping(uint64_t &timeout) {
 }
 
 /**
- * 调度器无调度任务时会阻塞idle协程上，对IO调度器而言，idle状态应该关注两件事，一是有没有新的调度任务，对应Schduler::schedule()，
- * 如果有新的调度任务，那应该立即退出idle状态，并执行对应的任务；二是关注当前注册的所有IO事件有没有触发，如果有触发，那么应该执行
+ * 调度器无调度任务时会阻塞idle协程上，对IO调度器而言，idle状态应该关注两件事
+ * 一、是有没有新的调度任务，对应Schduler::schedule()，
+ * 如果有新的调度任务，那应该立即退出idle状态，并执行对应的任务
+ * 二、是关注当前注册的所有IO事件有没有触发，如果有触发，那么应该执行
  * IO事件对应的回调函数
  */
 void IOManager::idle() {
-	g_logger->debug("idle");
-    // 一次epoll_wait最多检测256个就绪事件，如果就绪事件超过了这个数，那么会在下轮epoll_wati继续处理
+	g_logger->debug("idle begin");
+    // 一次epoll_wait最多检测1024个就绪事件，如果就绪事件超过了这个数，那么会在下轮epoll_wati继续处理
     const uint64_t MAX_EVNETS = 1024;
     epoll_event *events       = new epoll_event[MAX_EVNETS]();
     std::shared_ptr<epoll_event> shared_events(events, [](epoll_event *ptr) {
+        ///析构时执行
         delete[] ptr;
     });
 

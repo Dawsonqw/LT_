@@ -12,8 +12,7 @@ public:
     typedef RWMutex RWMutexType;
 
     /**
-     * @brief IO事件，继承自epoll对事件的定义
-     * @details 这里只关心socket fd的读和写事件，其他epoll事件会归类到这两类事件中
+     * 定义IO事件类型 只关注读写事件 其他事件归类到这两类事件中 
      */
     enum Event {
         /// 无事件
@@ -26,15 +25,12 @@ public:
 
 private:
     /**
-     * @brief socket fd上下文类
-     * @details 每个socket fd都对应一个FdContext，包括fd的值，fd上的事件，以及fd的读写事件上下文
+     * 保存fd上下文 epoll返回事件可以根据fd找到对应的结构体 执行回调操作
      */
     struct FdContext {
         typedef Mutex MutexType;
         /**
-         * @brief 事件上下文类
-         * @details fd的每个事件都有一个事件上下文，保存这个事件的回调函数以及执行回调函数的调度器
-         *          LT对fd事件做了简化，只预留了读事件和写事件，所有的事件都被归类到这两类事件中
+         * 保存回调操作的对象
          */
         struct EventContext {
             /// 执行事件回调的调度器
@@ -46,22 +42,17 @@ private:
         };
 
         /**
-         * @brief 获取事件上下文类
-         * @param[in] event 事件类型
-         * @return 返回对应事件的上下文
+         * 返回事件对应的上下文 上下文保存了回调对象
          */
         EventContext &getEventContext(Event event);
 
         /**
-         * @brief 重置事件上下文
-         * @param[in, out] ctx 待重置的事件上下文对象
+         * 重置事件上下文
          */
         void resetEventContext(EventContext &ctx);
 
         /**
-         * @brief 触发事件
-         * @details 根据事件类型调用对应上下文结构中的调度器去调度回调协程或回调函数
-         * @param[in] event 事件类型
+         * 根据事件触发对应回调
          */
         void triggerEvent(Event event);
 
