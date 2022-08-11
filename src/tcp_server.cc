@@ -49,6 +49,7 @@ bool TcpServer::bind(const std::vector<Address::ptr>& addrs
         m_socks.push_back(sock);
     }
 
+    //存在绑定失败的就直接返回 对于成功的不做处理
     if(!fails.empty()) {
         m_socks.clear();
         return false;
@@ -62,9 +63,12 @@ bool TcpServer::bind(const std::vector<Address::ptr>& addrs
 
 void TcpServer::startAccept(Socket::ptr sock) {
     while(!m_isStop) {
+        ///封装后api逻辑一致 返回的是接收到的客户端信息
         Socket::ptr client = sock->accept();
         if(client) {
+            //设置心跳 添加到调度器中等待调度 回调时handleclient 可以进行定制
             client->setRecvTimeout(m_recvTimeout);
+            //对客户端socket进行处理
             m_ioWorker->schedule(std::bind(&TcpServer::handleClient,
                         shared_from_this(), client));
         } else {
@@ -78,13 +82,16 @@ bool TcpServer::start() {
         return true;
     }
     m_isStop = false;
+    ///开启接收任务处理
     for(auto& sock : m_socks) {
+        ///服务端口对于所有监听socket的处理
         m_acceptWorker->schedule(std::bind(&TcpServer::startAccept,
                     shared_from_this(), sock));
     }
     return true;
 }
 
+//添加任务进行回收？
 void TcpServer::stop() {
     m_isStop = true;
     auto self = shared_from_this();
@@ -97,6 +104,7 @@ void TcpServer::stop() {
     });
 }
 
+///作为虚函数子类进行重写
 void TcpServer::handleClient(Socket::ptr client) {
 	//g_logger->info("handleClient {}",*client);
 }

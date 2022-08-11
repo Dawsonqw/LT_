@@ -5,6 +5,7 @@
 #include <signal.h> // for kill()
 #include <sys/syscall.h>
 #include <sys/stat.h>
+#include <unistd.h>
 #include <execinfo.h> // for backtrace()
 #include <cxxabi.h>   // for abi::__cxa_demangle()
 #include <algorithm>  // for std::transform()
@@ -107,10 +108,20 @@ static bool Check(std::string filename){
 	return ret;
 }
 
-bool Unlink(const std::string &filename, bool exist = false){
-	if (!exist &&Check(filename)) 
-				return true;
+static int __lstat(const char *file, struct stat *st = nullptr) {
+    struct stat lst;
+    int ret = lstat(file, &lst);
+    if (st) {
+        *st = lst;
+    }
+    return ret;
+}
+
+bool Unlink(const std::string &filename, bool exist) {
+    if (!exist && __lstat(filename.c_str())) {
+        return true;
+    }
     return ::unlink(filename.c_str()) == 0;
-} 
+}
 
 }// namespace LT

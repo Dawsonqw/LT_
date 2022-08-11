@@ -86,9 +86,9 @@ add_executable(test_util tests/test_util.cpp)
 add_dependencies(test_util LT)
 target_link_libraries(test_util ${LIBRS})
 
-#add_executable(test_address tests/test_address.cc)
-#add_dependencies(test_address LT)
-#target_link_libraries(test_address ${LIBRS})
+add_executable(test_address tests/test_address.cc)
+add_dependencies(test_address LT)
+target_link_libraries(test_address ${LIBRS})
 
 
 

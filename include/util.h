@@ -64,10 +64,10 @@ uint64_t GetCurrentMS();
  */
 uint64_t GetCurrentUS();
 
-} // namespace LT
-
 /**
  * brief 删除文件 
  * */
 bool Unlink(const std::string &filename, bool exist = false);
+
+} // namespace LT
 #endif // 

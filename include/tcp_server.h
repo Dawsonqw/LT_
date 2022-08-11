@@ -10,18 +10,19 @@
 
 namespace LT {
 /**
- * @brief TCP服务器封装
+ *TCP服务器封装
  */
 class TcpServer : public std::enable_shared_from_this<TcpServer>
                     , Noncopyable {
 public:
     typedef std::shared_ptr<TcpServer> ptr;
+
     /**
      * @brief 构造函数
      * @param[in] name 服务器名称
      * @param[in] type 服务器类型
-     * @param[in] io_worker socket客户端工作的协程调度器
-     * @param[in] accept_worker 服务器socket执行接收socket连接的协程调度器
+     * @param[in] io_worker socket客户端工作的协程调度器 分发客户端socket到调度器
+     * @param[in] accept_worker 服务器socket执行接收socket连接的协程调度器 分发监听socket到调度器
      */
     TcpServer(LT::IOManager* io_woker = LT::IOManager::GetThis()
               ,LT::IOManager* accept_worker = LT::IOManager::GetThis());
