@@ -35,7 +35,7 @@ void test_ifaces(int family) {
         return;
     }
     for (auto &i : results) {
-        //g_logger->info("i.fist{}-i.second{} -i.second.second{}",i.first,i.second.first,i.second.second);
+        g_logger->info("i.fist{}  -i.second.second{}",i.first,i.second.second);
     }
 }
 

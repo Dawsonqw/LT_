@@ -52,7 +52,7 @@ int main(int argc, char *argv[]) {
     g_logger->info("main begin");
 
     std::vector<LT::Thread::ptr> thrs;
-    for (int i = 0; i < 1; i++) {
+    for (int i = 0; i < 3; i++) {
         thrs.push_back(LT::Thread::ptr(
             new LT::Thread(&test_fiber, "thread_" + std::to_string(i))));
     }

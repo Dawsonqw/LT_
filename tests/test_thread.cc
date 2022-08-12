@@ -45,7 +45,7 @@ int main(int argc, char *argv[]) {
     std::vector<LT::Thread::ptr> thrs;
     int arg = 123456;
     for(int i = 0; i < 100; i++) {
-        // 带参数的线程用std::bind进行参数绑定
+        // 带参数的线程用std::bind进行参数绑定 + 名称
         LT::Thread::ptr thr(new LT::Thread(std::bind(func1, &arg), "g_" + std::to_string(i)));
         thrs.push_back(thr);
     }

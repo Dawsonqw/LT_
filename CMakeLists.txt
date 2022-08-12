@@ -16,7 +16,12 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 #        program_options regex system thread unit_test_framework)
 #find_package(Boost REQUIRED COMPONENTS ${BOOST_COMPONENTS})
 include_directories(${PROJECT_SOURCE_DIR}/include)
+include_directories(${PROJECT_SOURCE_DIR}/include/json)
 set(SOURCE_LIST
+		src/json_reader.cpp
+		src/json_value.cpp
+		src/json_writer.cpp
+
 	    src/util.cc
         src/mutex.cc
 	    src/thread.cc
