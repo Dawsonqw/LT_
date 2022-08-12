@@ -30,9 +30,11 @@
 #include "string"
 #include "vector"
 
+std::shared_ptr<spdlog::sinks::basic_file_sink_mt>lg_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>("Logs/fiber.txt");
+std::shared_ptr<spdlog::sinks::stdout_color_sink_mt> lc_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
 
-
-auto g_logger=std::make_shared<spdlog::logger>("gLog", g_sink);
+static lsinks lsink{lg_sink,lc_sink};
+static auto g_logger = std::make_shared<spdlog::logger>("test_fiber",lsink);
 
 ////由于是自己分配空间 如果空间分配不够会出错 默认是128*1024字节 也就是128k
 void fiber_cb(){

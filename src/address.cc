@@ -4,12 +4,15 @@
 #include <netdb.h>
 #include <ifaddrs.h>
 #include <stddef.h>
-
+#include "singleton.h"
 #include "endian.h"
 
 namespace LT {
+    
+static lsinks lsink{g_sink,c_sink};
+static auto g_logger = std::make_shared<spdlog::logger>("address",lsink);
 
-static auto g_logger = std::make_shared<spdlog::logger>("root", g_sink);
+
 
 template <class T>
 static T CreateMask(uint32_t bits) {

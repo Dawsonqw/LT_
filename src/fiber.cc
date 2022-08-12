@@ -6,7 +6,10 @@
 
 namespace LT {
 
-static auto g_logger = std::make_shared<spdlog::logger>("root", g_sink);
+static lsinks lsink{g_sink,c_sink};
+static auto g_logger = std::make_shared<spdlog::logger>("fiber",lsink);
+
+
 /// 全局静态变量，用于生成协程id
 static std::atomic<uint64_t> s_fiber_id{0};
 /// 全局静态变量，用于统计当前的协程数

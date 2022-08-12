@@ -9,7 +9,11 @@
 
 namespace LT {
 
-static auto g_logger = std::make_shared<spdlog::logger>("root", g_sink);
+static lsinks lsink{g_sink,c_sink};
+static auto g_logger = std::make_shared<spdlog::logger>("hook",lsink);
+
+
+
 static thread_local bool t_hook_enable = false;
 
     //小技巧，宏定义传参方便初始化

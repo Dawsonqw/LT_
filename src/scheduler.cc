@@ -6,7 +6,10 @@
 
 namespace LT {
 
-static auto g_logger = std::make_shared<spdlog::logger>("root", g_sink);
+
+static lsinks lsink{g_sink,c_sink};
+static auto g_logger = std::make_shared<spdlog::logger>("scheduler",lsink);
+
 
 /// 当前线程的调度器，同一个调度器下的所有线程共享同一个实例
     static thread_local Scheduler *t_scheduler = nullptr;

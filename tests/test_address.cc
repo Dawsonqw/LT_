@@ -1,6 +1,12 @@
 #include "LT.h"
 
-auto g_logger=std::make_shared<spdlog::logger>("gLog", g_sink);
+std::shared_ptr<spdlog::sinks::basic_file_sink_mt>lg_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>("Logs/address.txt");
+std::shared_ptr<spdlog::sinks::stdout_color_sink_mt> lc_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+
+static lsinks lsink{lg_sink,lc_sink};
+static auto g_logger = std::make_shared<spdlog::logger>("test_address",lsink);
+
+
 
 const char *family2str(int family) {
     switch (family) {
@@ -29,7 +35,7 @@ void test_ifaces(int family) {
         return;
     }
     for (auto &i : results) {
-        g_logger->info("i.fist{}-i.second{} -i.second.second{}",i.first,i.second.first,i.second.second);
+        //g_logger->info("i.fist{}-i.second{} -i.second.second{}",i.first,i.second.first,i.second.second);
     }
 }
 

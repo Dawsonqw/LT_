@@ -4,11 +4,12 @@
 
 namespace LT {
 
+static lsinks lsink{g_sink,c_sink};
+static auto g_logger = std::make_shared<spdlog::logger>("thread",lsink);
+
     ///线程局部变量：thread_local 线程开始时创建变量 结束时释放变量 全局有效而不会被其它线程影响
 static thread_local Thread *t_thread          = nullptr;
 static thread_local std::string t_thread_name = "UNKNOW";
-
-static auto g_logger = std::make_shared<spdlog::logger>("root", g_sink);
 
 Thread *Thread::GetThis() {
     return t_thread;

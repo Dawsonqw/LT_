@@ -2,7 +2,8 @@
 #define __LT_H__
 
 #include "util.h"
-#include "log.h"
+//#include "log.h"
+#include "global.h"
 #include "singleton.h"
 #include "mutex.h"
 #include "noncopyable.h"

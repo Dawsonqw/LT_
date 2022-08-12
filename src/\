@@ -16,11 +16,9 @@
 #include "fiber.h"
 
 namespace LT {
-
-static lsinks lsink{g_sink,c_sink};
-static auto g_logger = std::make_shared<spdlog::logger>("util",lsink);
-
-
+ 
+	std::initializer_list<spdlog::sinks>lsink{g_sink,c_sink};
+static auto g_logger = std::make_shared<spdlog::logger>("root",lsink);
 pid_t GetThreadId() {
     return syscall(SYS_gettid);
 }

@@ -5,7 +5,8 @@
 
 namespace LT {
 
-static auto g_logger = std::make_shared<spdlog::logger>("root", g_sink);
+static lsinks lsink{g_sink,c_sink};
+static auto g_logger = std::make_shared<spdlog::logger>("tcpserver",lsink);
 
 
 TcpServer::TcpServer(LT::IOManager* io_worker,

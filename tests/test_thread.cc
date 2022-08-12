@@ -3,7 +3,13 @@
 
 ///注意：需要在关优化的情况下进行测试 否则优化后的代码与原来语义可能有差别
 
-auto g_logger=std::make_shared<spdlog::logger>("gLog", g_sink);
+std::shared_ptr<spdlog::sinks::basic_file_sink_mt>lg_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>("Logs/thread.txt");
+std::shared_ptr<spdlog::sinks::stdout_color_sink_mt> lc_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+
+
+static lsinks lsink{lg_sink,lc_sink};
+static auto g_logger = std::make_shared<spdlog::logger>("test_thread",lsink);
+
 
 long count = 0;
 //LT::NullMutex s_mutex;

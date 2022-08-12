@@ -10,7 +10,9 @@
 
 namespace LT {
 
-static auto g_logger = std::make_shared<spdlog::logger>("root", g_sink);
+static lsinks lsink{g_sink,c_sink};
+static auto g_logger = std::make_shared<spdlog::logger>("socket",lsink);
+
 
 Socket::ptr Socket::CreateTCP(LT::Address::ptr address) {
     Socket::ptr sock(new Socket(address->getFamily(), TCP, 0));
@@ -163,7 +165,7 @@ bool Socket::bind(const Address::ptr addr) {
         if (sock->connect(uaddr)) {
             return false;
         } else {
-            LT::Unlink(uaddr->getPath(), true);
+            Unlink(uaddr->getPath(), true);
         }
     }
 
