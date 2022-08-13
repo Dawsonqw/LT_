@@ -35,6 +35,7 @@ set(SOURCE_LIST
 		src/fd_manager.cc
 		src/socket.cc
 		src/tcp_server.cc
+		src/JsonConfig.cc
         )
 
 add_library(LT STATIC ${SOURCE_LIST})
@@ -109,4 +110,9 @@ target_link_libraries(test_socket_tcp_s ${LIBRS})
 add_executable(test_tcp_server tests/test_tcp_server.cc)
 add_dependencies(test_tcp_server LT)
 target_link_libraries(test_tcp_server ${LIBRS})
+
+add_executable(test_json tests/test_jsonparse.cpp)
+add_dependencies(test_json LT)
+target_link_libraries(test_json ${LIBRS})
+
 
