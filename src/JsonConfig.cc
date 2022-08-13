@@ -6,13 +6,15 @@ namespace LT {
     static lsinks lsink{g_sink,c_sink};
     static auto g_logger = std::make_shared<spdlog::logger>("json",lsink);
 
-
     JsonParse::JsonParse(const std::string &FileName) : m_filename(FileName), m_openerr(false) {
+        g_logger->set_level(spdlog::level::trace);
         std::ifstream ifs;
         ifs.open(m_filename, std::ios::binary);
         m_openerr = m_reader.parse(ifs, m_root);
         if(!m_openerr) {
             g_logger->debug("json 文件打开失败");
+        }else{
+            g_logger->debug("json{}文件访问成功",m_filename);
         }
         ifs.close();
     }
@@ -52,10 +54,12 @@ namespace LT {
         if(it==m_configers.end()){
             printf("新创建一个");
             JsonParse::ptr Obj=std::make_shared<JsonParse>(filename);
-            if(Obj->OpenFile()){
+            //文件打开错误
+            if(!Obj->OpenFile()){
                 g_logger->debug("openfile filename {} error",filename);
                 return defaultval;
             }
+            //正常访问
             return Obj->JsonGetVal(ObjName,KeyName,defaultval);
         }
         //找到了直接调用

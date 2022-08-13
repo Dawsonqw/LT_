@@ -1,0 +1,13 @@
+{
+  "/*注释：*/": "所有配置写成模块加 key-value键值形式",
+  "Test":
+    {
+    "lag": "c++",
+    "tool": "clion"
+    },
+
+  "fiber": {
+    "lag": "python",
+    "tool": "py"
+  }
+}

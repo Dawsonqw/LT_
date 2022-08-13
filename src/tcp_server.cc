@@ -2,6 +2,7 @@
 #include <sstream>
 #include "tcp_server.h"
 #include "log.h"
+#include "JsonConfig.h"
 
 namespace LT {
 
@@ -13,10 +14,14 @@ TcpServer::TcpServer(LT::IOManager* io_worker,
                     LT::IOManager* accept_worker)
     :m_ioWorker(io_worker)
     ,m_acceptWorker(accept_worker)
-    ,m_recvTimeout(60*2*1000)
-    ,m_name("LT/1.0.0")
-    ,m_type("tcp")
     ,m_isStop(true) {
+    std::string root="../conf/g_Config.json";
+    std::string TimeOut=JsonMg::GetInstance()->GetVal(root,"TcpServer","recvTimeout","120000");
+    std::string name=JsonMg::GetInstance()->GetVal(root,"TcpServer","name","Lt/1.0");
+    std::string type=JsonMg::GetInstance()->GetVal(root,"TcpServer","type","tcp");
+    m_recvTimeout=stoi(TimeOut);
+    m_name=name;
+    m_type=type;
 }
 
 TcpServer::~TcpServer() {

@@ -28,7 +28,7 @@ void MyTcpServer::handleClient(LT::Socket::ptr client) {
 
 void run() {
     LT::TcpServer::ptr server(new MyTcpServer); // 内部依赖shared_from_this()，所以必须以智能指针形式创建对象
-    auto addr = LT::Address::LookupAny("0.0.0.0:12345");
+    auto addr = LT::Address::LookupAny("127.0.0.1:8088");
     LT_ASSERT(addr);
     std::vector<LT::Address::ptr> addrs;
     addrs.push_back(addr);

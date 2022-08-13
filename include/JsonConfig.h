@@ -6,6 +6,9 @@
 #include <fstream>
 #include <stdio.h>
 
+
+#include "singleton.h"
+
 ///需求：在任意地方拿到json中对应的key的值
 
 //访问api： Get(objname,keyname,value,defaultvalue)
@@ -39,5 +42,8 @@ namespace LT {
     public:
         std::string GetVal(const std::string& filename,const std::string &ObjName, const std::string &KeyName, const std::string& defaultval);
     };
+
+
+    typedef Singleton<JsonManger> JsonMg;
 }
 #endif //LT_JSONCONFIG_H
