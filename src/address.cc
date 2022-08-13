@@ -28,35 +28,11 @@ static uint32_t CountBytes(T value) {
     return result;
 }
 
-Address::ptr Address::LookupAny(const std::string &host,
-                                int family, int type, int protocol) {
-    std::vector<Address::ptr> result;
-    if (Lookup(result, host, family, type, protocol)) {
-        return result[0];
-    }
-    return nullptr;
-}
 
-IPAddress::ptr Address::LookupAnyIPAddress(const std::string &host,
-                                           int family, int type, int protocol) {
-    /**
-     * 核心逻辑:利用LookUp，将对应host对应的域名放到result中
-     * **/
-    std::vector<Address::ptr> result;
-    if (Lookup(result, host, family, type, protocol)) {
-        //for(auto& i : result) {
-        //    std::cout << i->toString() << std::endl;
-        //}
-        for (auto &i : result) {
-            IPAddress::ptr v = std::dynamic_pointer_cast<IPAddress>(i);
-            if (v) {
-                return v;
-            }
-        }
-    }
-    return nullptr;
-}
-
+/*
+ * host格式：ipv4:127.0.0.1:8088  192.168.1.1:9999  localhost  127.0.0.1:ftp等等
+ *          ipv6:[127.0.0.1]:8088 [localhost]  [127.0.0.1]:http
+ * */
 bool Address::Lookup(std::vector<Address::ptr> &result, const std::string &host,
                      int family, int type, int protocol) {
     addrinfo hints, *results, *next;
@@ -106,7 +82,7 @@ bool Address::Lookup(std::vector<Address::ptr> &result, const std::string &host,
     }
     int error = getaddrinfo(node.c_str(), service, &hints, &results);///第一个参数是Hostname
     if (error) {
-		g_logger->debug("Address::Lookup getaddress({},{},{},) err={} errstr={}", host, family, type,error, gai_strerror(error));
+        g_logger->debug("Address::Lookup getaddress({},{},{},) err={} errstr={}", host, family, type,error, gai_strerror(error));
         return false;
     }
 
@@ -114,13 +90,41 @@ bool Address::Lookup(std::vector<Address::ptr> &result, const std::string &host,
     while (next) {
         result.push_back(Create(next->ai_addr, (socklen_t)next->ai_addrlen));
         /// 一个ip/端口可以对应多种接字类型，比如SOCK_STREAM, SOCK_DGRAM, SOCK_RAW，所以这里会返回重复的结果
-		g_logger->debug("family:{},sock type:{}", next->ai_family, next->ai_socktype);
+        g_logger->debug("family:{},sock type:{}", next->ai_family, next->ai_socktype);
         next = next->ai_next;
     }
 
     freeaddrinfo(results);
     return !result.empty();
 }
+
+
+Address::ptr Address::LookupAny(const std::string &host,
+                                int family, int type, int protocol) {
+    std::vector<Address::ptr> result;
+    if (Lookup(result, host, family, type, protocol)) {
+        return result[0];
+    }
+    return nullptr;
+}
+
+IPAddress::ptr Address::LookupAnyIPAddress(const std::string &host,
+                                           int family, int type, int protocol) {
+    /**
+     * 核心逻辑:利用LookUp，将对应host对应的域名放到result中
+     * **/
+    std::vector<Address::ptr> result;
+    if (Lookup(result, host, family, type, protocol)) {
+        for (auto &i : result) {
+            IPAddress::ptr v = std::dynamic_pointer_cast<IPAddress>(i);
+            if (v) {
+                return v;
+            }
+        }
+    }
+    return nullptr;
+}
+
 
 bool Address::GetInterfaceAddresses(std::multimap<std::string, std::pair<Address::ptr, uint32_t>> &result,
                                     int family) {
@@ -334,7 +338,7 @@ IPAddress::ptr IPv4Address::networkAddress(uint32_t prefix_len) {
     if (prefix_len > 32) {
         return nullptr;
     }
-    ///拿到网络主机地址？
+    ///拿到网络主机地址
     sockaddr_in baddr(m_addr);
     baddr.sin_addr.s_addr &= byteswapOnLittleEndian(
         ~CreateMask<uint32_t>(prefix_len));

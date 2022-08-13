@@ -53,7 +53,7 @@ void test_iface(const char *iface, int family) {
         return;
     }
     for(auto &i : result) {
-        g_logger->info("i.fist {} - i.second {}",i.first->toString(),i.second);
+        g_logger->info("i.fist: {  } - i.second : {  }",i.first->toString(),i.second);
     }
 }
 
@@ -89,7 +89,7 @@ void test_lookup(const char *host) {
 void test_ipv4() {
     g_logger->info("ipv4");
 
-    auto addr = LT::IPAddress::Create("192.168.1.120");
+    auto addr = LT::IPAddress::Create("192.168.1.120",8080);
     if (!addr) {
         g_logger->error("IPAddress::Create error");
         return;
@@ -106,7 +106,7 @@ void test_ipv4() {
 void test_ipv6() {
     g_logger->info("ipv6");
 
-    auto addr = LT::IPAddress::Create("fe80::215:5dff:fe88:d8a");
+    auto addr = LT::IPAddress::Create("fe80::215:5dff:fe88:d8a",8080);
     if (!addr) {
         g_logger->error("IPAddress::Create error");
         return;
@@ -123,7 +123,7 @@ void test_ipv6() {
 void test_unix() {
     g_logger->info("unix");
 
-    auto addr = LT::UnixAddress("/tmp/test_unix.sock");
+    auto addr = LT::UnixAddress("../tmp/addresstest.txt");
     g_logger->info("addr {} family {} path {} addrlen {}",addr.toString(), family2str(addr.getFamily()),
                    addr.getPath(),addr.getAddrLen());
 }
@@ -143,7 +143,7 @@ int main(int argc, char *argv[]) {
     test_lookup("127.0.0.1:http");
     test_lookup("127.0.0.1:ftp");
     test_lookup("localhost");
-    test_lookup("localhost:80");
+    test_lookup("localhost:8080");
     test_lookup("www.baidu.com");
     test_lookup("www.baidu.com:80");
     test_lookup("www.baidu.com:http");

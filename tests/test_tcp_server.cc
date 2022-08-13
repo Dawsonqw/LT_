@@ -1,7 +1,5 @@
 #include "LT.h"
 
-//static LT::Logger::ptr g_logger = LT_LOG_ROOT();
-
 std::shared_ptr<spdlog::sinks::basic_file_sink_mt>lg_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>("Logs/tcpserver.txt");
 std::shared_ptr<spdlog::sinks::stdout_color_sink_mt> lc_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
 
@@ -18,17 +16,19 @@ protected:
 };
 
 void MyTcpServer::handleClient(LT::Socket::ptr client) {
-  //  LT_LOG_INFO(g_logger) << "new client: " << client->toString();
+    g_logger->info("new client:{}",client->toString());
     static std::string buf;
     buf.resize(4096);
     client->recv(&buf[0], buf.length()); // 这里有读超时，由tcp_server.read_timeout配置项进行配置，默认120秒
-    //LT_LOG_INFO(g_logger) << "recv: " << buf;
+    g_logger->info("recv:{}",buf);
     client->close();
 }
 
 void run() {
     LT::TcpServer::ptr server(new MyTcpServer); // 内部依赖shared_from_this()，所以必须以智能指针形式创建对象
-    auto addr = LT::Address::LookupAny("127.0.0.1:8088");
+    std::string serveraddr=LT::JsonMg::GetInstance()->GetVal("../conf/g_Config.json","TcpServer","server","127.0.0.1:8080");
+    auto addr = LT::Address::LookupAny(serveraddr);
+
     LT_ASSERT(addr);
     std::vector<LT::Address::ptr> addrs;
     addrs.push_back(addr);
@@ -37,9 +37,8 @@ void run() {
     while(!server->bind(addrs, fails)) {
         sleep(2);
     }
-    
-    //LT_LOG_INFO(g_logger) << "bind success, " << server->toString();
 
+    g_logger->info("bind success {}",server->toString());
     server->start();
 }
 

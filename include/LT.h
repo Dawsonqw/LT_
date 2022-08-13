@@ -18,4 +18,5 @@
 #include "address.h"
 #include "socket.h"
 #include "tcp_server.h"
+#include "JsonConfig.h"
 #endif

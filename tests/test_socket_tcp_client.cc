@@ -1,6 +1,5 @@
 #include<LT.h>
 
-//static LT::Logger::ptr g_logger = LT_LOG_ROOT();
 
 std::shared_ptr<spdlog::sinks::basic_file_sink_mt>lg_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>("Logs/sockettcp.txt");
 std::shared_ptr<spdlog::sinks::stdout_color_sink_mt> lc_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
@@ -16,18 +15,20 @@ void test_tcp_client() {
     auto socket = LT::Socket::CreateTCPSocket();
     LT_ASSERT(socket);
 
-    auto addr = LT::Address::LookupAnyIPAddress("0.0.0.0:12345");
+
+    std::string serveraddr=LT::JsonMg::GetInstance()->GetVal("../conf/g_Config.json","TcpServer","server","127.0.0.1:8080");
+    auto addr = LT::Address::LookupAnyIPAddress(serveraddr);
     LT_ASSERT(addr);
 
     ret = socket->connect(addr);
     LT_ASSERT(ret);
 
-    //LT_LOG_INFO(g_logger) << "connect success, peer address: " << socket->getRemoteAddress()->toString();
+    g_logger->info("connect success,perr address:{}",socket->getRemoteAddress()->toString());
 
     std::string buffer;
     buffer.resize(1024);
     socket->recv(&buffer[0], buffer.size());
-   // LT_LOG_INFO(g_logger) << "recv: " << buffer;
+    g_logger->info("recv: {}",buffer);
     socket->close();
 
     return;

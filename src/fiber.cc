@@ -114,7 +114,6 @@ Fiber::~Fiber() {
         LT_ASSERT(!m_cb);              // 主协程没有cb
         LT_ASSERT(m_state == RUNNING); // 主协程一定是执行状态
 
-        ///todo:cur是不是有内存泄露？
         Fiber *cur = p_cur_running_fiber; // 当前协程就是自己
         if (cur == this) {
             SetThis(nullptr);
