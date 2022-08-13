@@ -1,4 +1,4 @@
-##模块划分：
+模块划分： 
 基于posix封装的线程、锁  
 基于Jsoncpp封装的配置解析
 基于ucontext封装的协程  
@@ -10,16 +10,15 @@
 基于协程调度器、HOOK函数、socket的TCP服务器框架  
 
 
-##主要参考：
+主要参考：
 sylar高性能服务器框架：https://github.com/sylar-yin/sylar  
 
-##引用库：  
+引用库：  
 jsoncpp: https://github.com/open-source-parsers/jsoncpp
-
 spdlog:  https://github.com/gabime/spdlog 
 
 
-##编译方法： 
+编译方法： 
 本项目根目录下:		
 mkdir build  
 cd build  
