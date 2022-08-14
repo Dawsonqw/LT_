@@ -20,7 +20,6 @@ void MyTcpServer::handleClient(LT::Socket::ptr client) {
     static std::string buf;
     buf.resize(4096);
     client->recv(&buf[0], buf.length()); // 这里有读超时，由配置项进行配置，默认120秒
-    printf("recv msg:%s\n",buf.c_str());
     g_logger->info("recv:{}",buf);
     client->close();
 }
