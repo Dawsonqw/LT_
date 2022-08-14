@@ -25,7 +25,7 @@ void test_tcp_client() {
 
     g_logger->info("connect success,perr address:{}",socket->getRemoteAddress()->toString());
 
-    std::string buffer;
+    std::string buffer="hello word";
     buffer.resize(1024);
     socket->recv(&buffer[0], buffer.size());
     g_logger->info("recv: {}",buffer);
@@ -34,9 +34,17 @@ void test_tcp_client() {
     return;
 }
 
-int main(int argc, char *argv[]) {
-    LT::IOManager iom;
-    iom.schedule(&test_tcp_client);
+void Send(int index){
+    g_logger->info("第{}个连接",index);
+    test_tcp_client();
+}
 
+int main(int argc, char *argv[]) {
+    g_logger->set_level(spdlog::level::trace);
+    LT::IOManager iom;
+    for(int i =0;i<100;i++) {
+        iom.schedule(std::bind(Send,i));
+    }
+    getchar();
     return 0;
 }

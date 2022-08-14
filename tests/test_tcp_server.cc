@@ -19,7 +19,8 @@ void MyTcpServer::handleClient(LT::Socket::ptr client) {
     g_logger->info("new client:{}",client->toString());
     static std::string buf;
     buf.resize(4096);
-    client->recv(&buf[0], buf.length()); // 这里有读超时，由tcp_server.read_timeout配置项进行配置，默认120秒
+    client->recv(&buf[0], buf.length()); // 这里有读超时，由配置项进行配置，默认120秒
+    printf("recv msg:%s\n",buf.c_str());
     g_logger->info("recv:{}",buf);
     client->close();
 }
@@ -43,6 +44,7 @@ void run() {
 }
 
 int main(int argc, char *argv[]) {
+    g_logger->set_level(spdlog::level::trace);
     LT::IOManager iom(2);
     iom.schedule(&run);
 
