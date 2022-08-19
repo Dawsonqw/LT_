@@ -105,11 +105,6 @@ uint64_t GetCurrentUS() {
     return tv.tv_sec * 1000 * 1000ul + tv.tv_usec;
 }
 
-static bool Check(std::string filename){
-	struct stat lst;
-	int ret=lstat(filename.c_str(),&lst);
-	return ret;
-}
 
 static int __lstat(const char *file, struct stat *st = nullptr) {
     struct stat lst;

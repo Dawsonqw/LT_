@@ -86,6 +86,7 @@ int main(int argc, char *argv[]) {
     // 只有以协程调度的方式运行hook才能生效
     LT::IOManager iom;
     iom.schedule(test_sock);
+  //  iom.schedule(test_sleep);
 
     g_logger->info("begin");
     return 0;

@@ -31,6 +31,8 @@ namespace LT {
         if (m_root[ObjName].isNull()) {
             g_logger->debug("json节点{} 访问失败", ObjName);
             return defaultval;
+        }else{
+            g_logger->debug("json节点{}访问成功",ObjName);
         }
 
         Json::Value Obj = m_root[ObjName];

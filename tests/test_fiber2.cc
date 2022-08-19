@@ -12,11 +12,6 @@
  *
  */
 
-/**
- * 最后一个问题：对GetThis的理解 如果是首次应用那么将会创建一个主协程 由于只有一个协程那么当前运行的协程和主协程都指向同一个
- * 如果已经有主协程了就返回得到当前运行的协程
- */
-
 
 
 ///流程：
@@ -49,11 +44,13 @@ void fiber_cb_reset(){
     LT::Fiber::GetThis()->yield();
     g_logger->info("cbreset end");
 }
+
 void fiber_cb_test(){
     g_logger->info("cbreset_test start");
     LT::Fiber::GetThis()->yield();///当前协程主动yield
     g_logger->info("cbreset_test end");
 }
+
 void test_cb(){
     g_logger->info("test begin");
     LT::Fiber::GetThis();///返回当前线程正在执行的协程 如果没有就创建一个主协程作为当前运行的协程也就是被调用的普通协程（此时两者指向同一个协程对象）
@@ -82,7 +79,6 @@ void test_cb(){
     LT::Fiber::ptr fiber1(new LT::Fiber(fiber_cb_test,128*1024,0));
     fiber1->resume();
     fiber1->resume();
-
 }
 
 int main(int argc,char* argv[]){

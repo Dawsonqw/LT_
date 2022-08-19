@@ -18,6 +18,7 @@ void run_in_fiber2() {
 
 void run_in_fiber() {
     g_logger->info("before yield");
+    //第一次挂起：返回主协程
     LT::Fiber::GetThis()->yield();
     g_logger->info("before end");
     // fiber结束之后会自动返回主协程运行
@@ -32,8 +33,10 @@ void test_fiber() {
     LT::Fiber::ptr fiber(new LT::Fiber(run_in_fiber, 128*1024, false));
     g_logger->info("use count:{}",fiber.use_count());
     g_logger->info("resume");
+    //恢复协程执行 进入run_in_fiber中执行
     fiber->resume();
     g_logger->info("resume end");
+    //从run_in_fiber返回
 
     /** 
      * 关于fiber智能指针的引用计数为3的说明：
@@ -41,9 +44,12 @@ void test_fiber() {
      * 还有一份在在run_in_fiber的GetThis()结果的临时变量里
      */
 
+    //再次进入协程run_in_fiber
     fiber->resume();
+    //服用协程
     fiber->reset(run_in_fiber2); // 上一个协程结束之后，复用其栈空间再创建一个新协程
     fiber->resume();
+    g_logger->info("mainthread over");
 }
 
 int main(int argc, char *argv[]) {
@@ -51,6 +57,7 @@ int main(int argc, char *argv[]) {
     LT::SetThreadName("main_thread");
     g_logger->info("main begin");
 
+    //多线程
     std::vector<LT::Thread::ptr> thrs;
     for (int i = 0; i < 3; i++) {
         thrs.push_back(LT::Thread::ptr(

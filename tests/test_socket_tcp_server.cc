@@ -9,11 +9,17 @@ static auto g_logger = std::make_shared<spdlog::logger>("test_socket_tcp_s",lsin
 
 
 void test_tcp_server() {
+    g_logger->set_level(spdlog::level::trace);
     int ret;
 
     std::string serveraddr=LT::JsonMg::GetInstance()->GetVal("../conf/g_Config.json","TcpServer","server","127.0.0.1:8080");
+    g_logger->debug("net port {}",serveraddr);
 
     auto  addr= LT::Address::LookupAnyIPAddress(serveraddr);
+    if(!addr)
+    {
+        g_logger->debug("无法访问 IP:PORT");
+    }
     LT_ASSERT(addr);
 
     auto socket = LT::Socket::CreateTCPSocket();

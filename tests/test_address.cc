@@ -89,7 +89,7 @@ void test_lookup(const char *host) {
 void test_ipv4() {
     g_logger->info("ipv4");
 
-    auto addr = LT::IPAddress::Create("192.168.1.120",8080);
+    auto addr = LT::IPAddress::Create("49.234.49.174",8080);
     if (!addr) {
         g_logger->error("IPAddress::Create error");
         return;
@@ -106,7 +106,7 @@ void test_ipv4() {
 void test_ipv6() {
     g_logger->info("ipv6");
 
-    auto addr = LT::IPAddress::Create("fe80::215:5dff:fe88:d8a",8080);
+    auto addr = LT::IPAddress::Create("fe80::5054:ff:feee:df8e",8080);
     if (!addr) {
         g_logger->error("IPAddress::Create error");
         return;

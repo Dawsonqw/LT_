@@ -16,7 +16,8 @@ void test_tcp_client() {
     LT_ASSERT(socket);
 
 
-    std::string serveraddr=LT::JsonMg::GetInstance()->GetVal("../conf/g_Config.json","TcpServer","server","127.0.0.1:8080");
+    std::string serveraddr=LT::JsonMg::GetInstance()->GetVal("../conf/g_Config.json","TcpServer","client","127.0.0.1:8080");
+    g_logger->debug("connect to addr:{}",serveraddr);
     auto addr = LT::Address::LookupAnyIPAddress(serveraddr);
     LT_ASSERT(addr);
 
@@ -30,7 +31,6 @@ void test_tcp_client() {
     socket->recv(&buffer[0], buffer.size());
     g_logger->info("recv: {}",buffer);
     socket->close();
-
     return;
 }
 

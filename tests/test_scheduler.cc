@@ -16,11 +16,12 @@ void test_fiber1() {
     g_logger->info("begin");
     /**
      * 协程主动让出执行权，在yield之前，协程必须再次将自己添加到调度器任务队列中，
-     * 否则yield之后没人管，协程会处理未执行完的逃逸状态，测试时可以将下面这行注释掉以观察效果
      */
     LT::Scheduler::GetThis()->schedule(LT::Fiber::GetThis());
 
     LT::Fiber::GetThis()->yield();
+
+    g_logger->info("ex again");
 }
 
 /**
@@ -29,8 +30,6 @@ void test_fiber1() {
 void test_fiber2() {
     /**
      * 一个线程同一时间只能有一个协程在运行，线程调度协程的本质就是按顺序执行任务队列里的协程
-     * 由于必须等一个协程执行完后才能执行下一个协程，所以任何一个协程的阻塞都会影响整个线程的协程调度，这里
-     * 睡眠的3秒钟之内调度器不会调度新的协程，对sleep函数进行hook之后可以改变这种情况
      */
     sleep(3);
 }
@@ -40,19 +39,11 @@ void test_fiber3() {
     g_logger->info("test end");
 }
 
-void test_fiber5() {
+void test_fiber4() {
     static int count = 0;
     count++;
 }
 
-/**
- * @brief 演示指定执行线程的情况
- */
-void test_fiber4() {
-    for (int i = 0; i < 3; i++) {
-        LT::Scheduler::GetThis()->schedule(test_fiber5, LT::GetThreadId());
-    }
-}
 
 int main() {
     /**
@@ -61,15 +52,13 @@ int main() {
      */
     LT::Scheduler sc;
 
-    // 额外创建新的线程进行调度，那只要添加了调度任务，调度器马上就可以调度该任务
-    // LT::Scheduler sc(3, false);
 
     // 添加调度任务，使用函数作为调度对象
     sc.schedule(test_fiber1);
     sc.schedule(test_fiber2);
 
     // 添加调度任务，使用Fiber类作为调度对象
-    LT::Fiber::ptr fiber(new LT::Fiber(&test_fiber3));
+    LT::Fiber::ptr fiber(new LT::Fiber(test_fiber3));
     sc.schedule(fiber);
 
     // 创建调度线程，开始任务调度，如果只使用main函数线程进行调度，那start相当于什么也没做

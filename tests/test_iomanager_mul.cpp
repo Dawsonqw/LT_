@@ -65,8 +65,8 @@ int main(int argc, char *argv[]) {
         g_logger->info("received");
     });
 
-//    iom.cancelAll(sock_fd);
-//    iom.delEvent(sockfd,LT::IOManager::READ);
+    //iom.cancelAll(sock_fd);
+    //iom.delEvent(sockfd,LT::IOManager::READ);
     iom.start();
 
 
