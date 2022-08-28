@@ -4,6 +4,7 @@
 #include <string.h>
 #include <assert.h>
 #include "util.h"
+#include "log.h"
 
 #if defined __GNUC__ || defined __llvm__
 /// LIKCLY 宏的封装, 告诉编译器优化,条件大概率成立
@@ -15,8 +16,10 @@
 #define LT_UNLIKELY(x) (x)
 #endif
 
+static lsinks csink{g_sink,c_sink};
+static auto c_logger = std::make_shared<spdlog::logger>("marco",csink);
+
 /*
-//auto g_logger = std::make_shared<spdlog::logger>("gLog", g_sink);
 /// 断言宏封装
 #define LT_ASSERT(x)                                                               \
     if (LT_UNLIKELY(!(x))) {                                                        \
@@ -30,18 +33,22 @@
     if (LT_UNLIKELY(!(x))) {                                                        \
       //  g_logger->error("ASSERTON:{} \nbacktrace:\n{}",x, LT::BacktraceToString(100, 2, "    "));\
         assert(x);                                                                     \
+
+        //c_logger->error("Assertion: {} \n backtrace: {}  \n",x,LT::BacktraceToString(100,2,""));              \
     }
 */
 
-#define LT_ASSERT(x)                                                               \
-    if (LT_UNLIKELY(!(x))) {                                                        \
-        assert(x);                                                                     \
+#define LT_ASSERT(x)                                                    \
+    if (LT_UNLIKELY(!(x))) {                                              \
+        c_logger->error("Assertion: {} \n backtrace: {}  \n",x,LT::BacktraceToString(100,2,""));              \
+        assert(x);                                                            \
     }
 
 /// 断言宏封装
 #define LT_ASSERT2(x, w)                                                            \
     if (LT_UNLIKELY(!(x))) {                                                        \
-        assert(x);                                                                     \
+        c_logger->error("Assertion: {} \n backtrace: {}  \n",x,LT::BacktraceToString(100,2,""));              \
+        assert(x);                                                                  \
     }
 
 

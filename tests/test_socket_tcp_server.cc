@@ -20,10 +20,10 @@ void test_tcp_server() {
     {
         g_logger->debug("无法访问 IP:PORT");
     }
-    LT_ASSERT(addr);
+    LT_ASSERT(addr!=nullptr);
 
     auto socket = LT::Socket::CreateTCPSocket();
-    LT_ASSERT(socket);
+    LT_ASSERT(socket!=nullptr);
 
     ret = socket->bind(addr);
     LT_ASSERT(ret);
@@ -39,7 +39,7 @@ void test_tcp_server() {
 
     while(1) {
         auto client = socket->accept();
-        LT_ASSERT(client);
+        LT_ASSERT(client!=nullptr);
         g_logger->info("new client arrive:{}",client->toString());
         client->send("hello world", strlen("hello world"));
         client->close();

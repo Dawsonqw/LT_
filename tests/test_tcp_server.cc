@@ -29,7 +29,7 @@ void run() {
     std::string serveraddr=LT::JsonMg::GetInstance()->GetVal("../conf/g_Config.json","TcpServer","server","127.0.0.1:8080");
     auto addr = LT::Address::LookupAny(serveraddr);
 
-    LT_ASSERT(addr);
+    LT_ASSERT(addr!=nullptr);
     std::vector<LT::Address::ptr> addrs;
     addrs.push_back(addr);
 

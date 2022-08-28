@@ -4,7 +4,7 @@
 #include <fcntl.h>     // for fcntl()
 #include "iomanager.h"
 #include "log.h"
-#include "macro.h"
+#include "marco.h"
 
 namespace LT {
 

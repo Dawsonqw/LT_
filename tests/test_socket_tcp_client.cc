@@ -13,13 +13,12 @@ void test_tcp_client() {
     int ret;
 
     auto socket = LT::Socket::CreateTCPSocket();
-    LT_ASSERT(socket);
-
+    LT_ASSERT(socket!=nullptr);
 
     std::string serveraddr=LT::JsonMg::GetInstance()->GetVal("../conf/g_Config.json","TcpServer","client","127.0.0.1:8080");
     g_logger->debug("connect to addr:{}",serveraddr);
     auto addr = LT::Address::LookupAnyIPAddress(serveraddr);
-    LT_ASSERT(addr);
+    LT_ASSERT(addr!=nullptr);
 
     ret = socket->connect(addr);
     LT_ASSERT(ret);
@@ -34,7 +33,8 @@ void test_tcp_client() {
     return;
 }
 
-void Send(int index){
+void Send(int index)
+{
     g_logger->info("第{}个连接",index);
     test_tcp_client();
 }
@@ -42,7 +42,7 @@ void Send(int index){
 int main(int argc, char *argv[]) {
     g_logger->set_level(spdlog::level::trace);
     LT::IOManager iom;
-    for(int i =0;i<100;i++) {
+    for(int i =0;i<2000;i++) {
         iom.schedule(std::bind(Send,i));
     }
     getchar();
