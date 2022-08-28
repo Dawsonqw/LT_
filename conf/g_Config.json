@@ -11,10 +11,11 @@
 
   "TcpServer":
   {
-    "/*服务器地址等参数配置*/": "建议在此处进行配置",
-    "recvTimeout":  "60*2*1000",
+    "/*服务器地址等参数配置*/": "建议在此处进行配置:recvTimeout单位：ms",
+    "recvTimeout":  "1000",
     "name":         "LT/1.0.0",
     "type":         "tcp",
+    "worker_thread":"3",
     "server":       "10.0.4.15:8080",
     "client":       "49.234.49.174:8080"
   }

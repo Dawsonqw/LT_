@@ -12,7 +12,7 @@ void test_tcp_server() {
     g_logger->set_level(spdlog::level::trace);
     int ret;
 
-    std::string serveraddr=LT::JsonMg::GetInstance()->GetVal("../conf/g_Config.json","TcpServer","server","127.0.0.1:8080");
+    std::string serveraddr=LT::JsonMg::GetInstance()->GetVal("../conf/g_Config.json","TcpServer","server","49.234.49.174:8080");
     g_logger->debug("net port {}",serveraddr);
 
     auto  addr= LT::Address::LookupAnyIPAddress(serveraddr);
@@ -47,8 +47,9 @@ void test_tcp_server() {
 }
 
 int main(int argc, char *argv[]) {
-    LT::IOManager iom(2);
+    std::string num=LT::JsonMg::GetInstance()->GetVal("../conf/g_Config.json","TcpServer","worker_thread","1");
+    int num_=stoi(num);
+    LT::IOManager iom(num_);
     iom.schedule(&test_tcp_server);
-
     return 0;
 }
