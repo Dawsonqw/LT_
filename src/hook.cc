@@ -259,6 +259,7 @@ int connect_with_timeout(int fd, const struct sockaddr* addr, socklen_t addrlen,
         }, winfo);
     }
 
+    //添加写事件是因为connect成功后可写
     int rt = iom->addEvent(fd, LT::IOManager::WRITE);
     if(rt == 0) {
         LT::Fiber::GetThis()->yield();
@@ -273,7 +274,6 @@ int connect_with_timeout(int fd, const struct sockaddr* addr, socklen_t addrlen,
         if(timer) {
             timer->cancel();
         }
-		//g_logger->error("connect addEvent({},WRITE) error",fd);
     }
 
     int error = 0;

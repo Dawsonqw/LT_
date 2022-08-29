@@ -379,6 +379,7 @@ Address::ptr Socket::getLocalAddress() {
 		g_logger->error("getpeername error sock={},errno={},errstr={}", m_sock, errno, strerror(errno));
         return Address::ptr(new UnknownAddress(m_family));
     }
+    //如果是unix 需要单独设置结构体长度
     if (m_family == AF_UNIX) {
         UnixAddress::ptr addr = std::dynamic_pointer_cast<UnixAddress>(result);
         addr->setAddrLen(addrlen);

@@ -15,7 +15,7 @@ namespace LT {
 class TcpServer : public std::enable_shared_from_this<TcpServer>
                     , Noncopyable {
 public:
-    typedef std::shared_ptr<TcpServer> ptr;
+    using ptr=std::shared_ptr<TcpServer>;
 
     /**
      * @brief 构造函数

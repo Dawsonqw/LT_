@@ -22,7 +22,7 @@ class IPAddress;
  */
 class Address {
 public:
-    typedef std::shared_ptr<Address> ptr;
+    using ptr=std::shared_ptr<Address>;
 
     /**
      * @brief 通过sockaddr指针创建Address

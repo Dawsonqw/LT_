@@ -93,6 +93,7 @@ Fiber::Fiber(std::function<void()> cb, size_t stacksize, bool run_in_scheduler)
     m_ctx.uc_stack.ss_sp   = m_stack;
     m_ctx.uc_stack.ss_size = m_stacksize;
 
+    //入口函数：MAinFunc
     makecontext(&m_ctx, &Fiber::MainFunc, 0);
 
 	g_logger->debug("Fiber::Fiber() id = {}", m_id);
@@ -180,12 +181,13 @@ void Fiber::yield() {
 }
 
 /**
- * 这里没有处理协程函数出现异常的情况，同样是为了简化状态管理，并且个人认为协程的异常不应该由框架处理，应该由开发者自行处理
+ * 函数入口
  */
 void Fiber::MainFunc() {
     Fiber::ptr cur = GetThis(); // GetThis()的shared_from_this()方法让引用计数加1
     //LT_ASSERT(cur);
 
+    //执行回调函数 结束执行后改变状态
     cur->m_cb();
     cur->m_cb    = nullptr;
     cur->m_state = TERM;

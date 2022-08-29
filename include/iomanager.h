@@ -8,8 +8,8 @@ namespace LT {
 
 class IOManager : public Scheduler, public TimerManager {
 public:
-    typedef std::shared_ptr<IOManager> ptr;
-    typedef RWMutex RWMutexType;
+    using ptr=std::shared_ptr<IOManager>;
+    using RWMutexType=RWMutex;
 
     /**
      * 定义IO事件类型 只关注读写事件 其他事件归类到这两类事件中 
@@ -28,7 +28,7 @@ private:
      * 保存fd上下文 epoll返回事件可以根据fd找到对应的结构体 执行回调操作
      */
     struct FdContext {
-        typedef Mutex MutexType;
+        using MutexType=Mutex;
         /**
          * 保存回调操作的对象
          */

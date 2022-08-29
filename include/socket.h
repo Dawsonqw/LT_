@@ -15,8 +15,8 @@ namespace LT {
  */
 class Socket : public std::enable_shared_from_this<Socket>, Noncopyable {
 public:
-    typedef std::shared_ptr<Socket> ptr;
-    typedef std::weak_ptr<Socket> weak_ptr;
+    using ptr=std::shared_ptr<Socket>;
+    using weak_ptr=std::weak_ptr<Socket>;
 
     /**
      * @brief Socket类型

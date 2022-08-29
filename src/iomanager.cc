@@ -1,7 +1,7 @@
-#include <unistd.h>    // for pipe()
+#include <unistd.h>    
 #include <vector>
-#include <sys/epoll.h> // for epoll_xxx()
-#include <fcntl.h>     // for fcntl()
+#include <sys/epoll.h> 
+#include <fcntl.h>     
 #include "iomanager.h"
 #include "log.h"
 #include "marco.h"

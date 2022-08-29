@@ -16,7 +16,7 @@ class Timer : public std::enable_shared_from_this<Timer> {
 friend class TimerManager;
 public:
     /// 定时器的智能指针类型
-    typedef std::shared_ptr<Timer> ptr;
+    using ptr=std::shared_ptr<Timer>;
 
     /**
      * @brief 取消定时器

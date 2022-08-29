@@ -15,7 +15,7 @@ namespace LT {
  */
 class FdCtx : public std::enable_shared_from_this<FdCtx> {
 public:
-    typedef std::shared_ptr<FdCtx> ptr;
+    using ptr=std::shared_ptr<FdCtx>;
     /**
      * @brief 通过文件句柄构造FdCtx
      */
@@ -81,6 +81,7 @@ private:
      */
     bool init();
 private:
+    //以下部分使用位域
     /// 是否初始化
     bool m_isInit: 1;
     /// 是否socket
@@ -104,7 +105,7 @@ private:
  */
 class FdManager {
 public:
-    typedef RWMutex RWMutexType;
+    using RWMutexType=RWMutex;
     /**
      * @brief 无参构造函数
      */
