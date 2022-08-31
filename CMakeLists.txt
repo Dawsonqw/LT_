@@ -70,7 +70,7 @@ add_executable(test_iomanager tests/test_iomanager.cc)
 add_dependencies(test_iomanager LT)
 target_link_libraries(test_iomanager ${LIBRS})
 
-add_executable(test_iomanager_mul tests/test_iomanager_mul.cpp)
+add_executable(test_iomanager_mul tests/test_iomanager_mul.cc)
 add_dependencies(test_iomanager_mul LT)
 target_link_libraries(test_iomanager_mul ${LIBRS})
 
@@ -88,7 +88,7 @@ add_dependencies(test_hook LT)
 target_link_libraries(test_hook ${LIBRS})
 
 
-add_executable(test_util tests/test_util.cpp)
+add_executable(test_util tests/test_util.cc)
 add_dependencies(test_util LT)
 target_link_libraries(test_util ${LIBRS})
 
@@ -111,7 +111,7 @@ add_executable(test_tcp_server tests/test_tcp_server.cc)
 add_dependencies(test_tcp_server LT)
 target_link_libraries(test_tcp_server ${LIBRS})
 
-add_executable(test_json tests/test_jsonparse.cpp)
+add_executable(test_json tests/test_jsonparse.cc)
 add_dependencies(test_json LT)
 target_link_libraries(test_json ${LIBRS})
 

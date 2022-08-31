@@ -116,12 +116,12 @@ public:
     void setRecvTimeout(int64_t v);
 
     /**
-     * @brief 获取sockopt @see getsockopt
+     * @brief 封装getsockopt
      */
     bool getOption(int level, int option, void *result, socklen_t *len);
 
     /**
-     * @brief 获取sockopt模板 @see getsockopt
+     * @brief 模板getsockopt
      */
     template <class T>
     bool getOption(int level, int option, T &result) {
@@ -130,12 +130,12 @@ public:
     }
 
     /**
-     * @brief 设置sockopt @see setsockopt
+     * @brief 封装setsockopt
      */
     bool setOption(int level, int option, const void *result, socklen_t len);
 
     /**
-     * @brief 设置sockopt模板 @see setsockopt
+     * @brief 模板setsockopt
      */
     template <class T>
     bool setOption(int level, int option, const T &value) {
@@ -189,6 +189,7 @@ public:
      *      @retval <0 socket出错
      */
     virtual int send(const void *buffer, size_t length, int flags = 0);
+
 
     /**
      * @brief 发送数据
