@@ -1,11 +1,3 @@
-/*
- * @Author: haohao-qw dawsonqw@163.com
- * @Date: 2022-08-19 09:04:35
- * @LastEditors: haohao-qw dawsonqw@163.com
- * @LastEditTime: 2022-08-31 22:45:16
- * @FilePath: /LT_/src/socket.cc
- * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
- */
 #include <sstream>
 #include "socket.h"
 #include "iomanager.h"
@@ -112,6 +104,8 @@ void Socket::setRecvTimeout(int64_t v) {
 }
 
 bool Socket::getOption(int level, int option, void *result, socklen_t *len) {
+    //getsocketopt获取某个套接字关联的选项，选项存在于多层协议中。
+    //sock:套接字，level：选项所在的协议层，optname：访问的选项名，optval：只想返回选项值的缓冲，optlen：入口参数组大的长度，返回值：成功：0，失败：-1
     int rt = getsockopt(m_sock, level, option, result, (socklen_t *)len);
     if (rt) {
 		g_logger->debug("getOption sock={},level={},option={},errno={},errstr={}",m_sock,level,option,errno,strerror(errno));
@@ -121,6 +115,7 @@ bool Socket::getOption(int level, int option, void *result, socklen_t *len) {
 }
 
 bool Socket::setOption(int level, int option, const void *result, socklen_t len) {
+    //sock:套接字，level：选项所在的协议层，optname：访问的选项名，optval：只想返回选项值的缓冲，optlen：入口参数组大的长度，返回值：成功：0，失败：-1
     if (setsockopt(m_sock, level, option, result, (socklen_t)len)) {
 		g_logger->debug("setOption sock={},level={},option={},errno={},errstr={}", m_sock, level, option, errno, strerror(errno));
         return false;
@@ -156,7 +151,9 @@ bool Socket::init(int sock) {
 
 bool Socket::bind(const Address::ptr addr) {
     m_localAddress = addr;
+    //套接字无效
     if (!isValid()) {
+        //创建新的套接字
         newSock();
         if (LT_UNLIKELY(!isValid())) {
             return false;
@@ -178,6 +175,7 @@ bool Socket::bind(const Address::ptr addr) {
         }
     }
 
+    //没有hook
     if (::bind(m_sock, addr->getAddr(), addr->getAddrLen())) {
 		g_logger->error("bind error errrno={} errstr={}", errno, strerror(errno));
         return false;
