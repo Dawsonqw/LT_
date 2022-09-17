@@ -10,8 +10,7 @@
 基于协程调度器、HOOK函数、socket的TCP服务器框架  
 
 
-主要参考：  
-sylar高性能服务器框架：https://github.com/sylar-yin/sylar  
+
 
 引用库：  
 jsoncpp: https://github.com/open-source-parsers/jsoncpp  
